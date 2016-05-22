@@ -37,18 +37,18 @@ new	g_GameType;
 new	Handle:g_DB;
 
 // Current map info
-new 	String:g_sMapName[64],
+new String:g_sMapName[64],
 	Handle:g_MapList;
 
 // Player timer info
-new 	Float:g_fStartTime[MAXPLAYERS + 1],
+new Float:g_fCurrentTime[MAXPLAYERS + 1],
 	bool:g_bTiming[MAXPLAYERS + 1];
 
 new g_StyleConfig[32][StyleConfig];
 new g_TotalStyles;
 
-new 	g_Type[MAXPLAYERS + 1];
-new 	g_Style[MAXPLAYERS + 1][MAX_TYPES];
+new g_Type[MAXPLAYERS + 1];
+new g_Style[MAXPLAYERS + 1][MAX_TYPES];
 	
 new	bool:g_bTimeIsLoaded[MAXPLAYERS + 1],
 	Float:g_fTime[MAXPLAYERS + 1][MAX_TYPES][MAX_STYLES],
@@ -62,7 +62,7 @@ new 	g_Strafes[MAXPLAYERS + 1],
 	
 new	Float:g_fNoClipSpeed[MAXPLAYERS + 1];
 
-new 	g_Buttons[MAXPLAYERS + 1],
+new g_Buttons[MAXPLAYERS + 1],
 	g_UnaffectedButtons[MAXPLAYERS + 1];
 
 new	Handle:g_hSoundsArray,
@@ -128,6 +128,9 @@ new	Handle:g_fwdOnTimerFinished_Pre,
 	Handle:g_fwdOnStylesLoaded,
 	Handle:g_fwdOnTimesLoaded,
 	Handle:g_fwdOnStyleChanged;
+	
+new Handle:g_ConVar_AirAccelerate,
+	Handle:g_ConVar_EnableBunnyhopping;
 	
 // Admin
 new	bool:g_bIsAdmin[MAXPLAYERS + 1];
@@ -224,6 +227,30 @@ public OnPluginStart()
 	g_hSound_Position_Record = CreateArray();
 	g_hSound_Path_Personal   = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
 	g_hSound_Path_Fail       = CreateArray(ByteCountToCells(PLATFORM_MAX_PATH));
+	
+	g_ConVar_AirAccelerate = FindConVar( "sv_airaccelerate" );
+	
+	if ( g_ConVar_AirAccelerate == INVALID_HANDLE )
+		SetFailState( "Unable to find cvar handle for sv_airaccelerate!" );
+	
+	new flags = GetConVarFlags( g_ConVar_AirAccelerate );
+	
+	flags &= ~FCVAR_NOTIFY;
+	//flags &= ~FCVAR_REPLICATED;
+	
+	SetConVarFlags( g_ConVar_AirAccelerate, flags );
+	
+	g_ConVar_EnableBunnyhopping = FindConVar( "sv_enablebunnyhopping" );
+	
+	if ( g_ConVar_EnableBunnyhopping == INVALID_HANDLE )
+		SetFailState( "Unable to find cvar handle for sv_enablebunnyhopping!" );
+	
+	flags = GetConVarFlags( g_ConVar_EnableBunnyhopping );
+	
+	flags &= ~FCVAR_NOTIFY;
+	flags &= ~FCVAR_REPLICATED;
+	
+	SetConVarFlags( g_ConVar_EnableBunnyhopping, flags );
 }
 
 public OnAllPluginsLoaded()
@@ -337,6 +364,22 @@ public OnStylesLoaded()
 	}
 }
 
+public OnStyleChanged(client, oldStyle, newStyle, type)
+{
+	new oldAA = g_StyleConfig[oldStyle][AirAcceleration];
+	new newAA = g_StyleConfig[newStyle][AirAcceleration];
+	
+	if(oldAA != newAA)
+	{
+		PrintColorText(client, "%s%sYour airacceleration has been set to %s%d%s.",
+			g_msg_start,
+			g_msg_textcol,
+			g_msg_varcol,
+			newAA,
+			g_msg_textcol);
+	}
+}
+
 public OnConfigsExecuted()
 {
 	// Reset temporary enabled and disabled styles
@@ -416,6 +459,17 @@ public bool:OnClientConnect(client)
 public OnClientPutInServer(client)
 {
 	QueryClientConVar(client, "fps_max", OnFpsMaxRetrieved);
+	
+	SDKHook(client, SDKHook_PreThink, Hook_PreThink);
+}
+
+public Hook_PreThink(client)
+{
+	if(!IsFakeClient(client))
+	{
+		SetConVarInt(g_ConVar_AirAccelerate, g_StyleConfig[g_Style[client][g_Type[client]]][AirAcceleration]);
+		SetConVarBool(g_ConVar_EnableBunnyhopping, g_StyleConfig[g_Style[client][g_Type[client]]][EnableBunnyhopping]);
+	}
 }
 
 public OnFpsMaxRetrieved(QueryCookie:cookie, client, ConVarQueryResult:result, const String:cvarName[], const String:cvarValue[])
@@ -1207,8 +1261,8 @@ public Action:SM_Pause(client, args)
 					if(GetClientVelocity(client, true, true, true) == 0.0)
 					{
 						GetEntPropVector(client, Prop_Send, "m_vecOrigin", g_fPausePos[client]);
-						g_fPauseTime[client]	= GetEngineTime();
-						g_bPaused[client] 	= true;
+						g_fPauseTime[client] = g_fCurrentTime[client];
+						g_bPaused[client] 	 = true;
 						
 						PrintColorText(client, "%s%sTimer paused.",
 							g_msg_start,
@@ -1258,7 +1312,7 @@ public Action:SM_Unpause(client, args)
 				TeleportEntity(client, g_fPausePos[client], NULL_VECTOR, Float:{0, 0, 0});
 				
 				// Set their new start time
-				g_fStartTime[client] = GetEngineTime() - (g_fPauseTime[client] - g_fStartTime[client]);
+				g_fCurrentTime[client] = g_fPauseTime[client];
 				
 				// Unpause
 				g_bPaused[client] = false;
@@ -1604,7 +1658,7 @@ GetTimerSimpleString(client, String:sResult[], maxlength)
 
 GetTimerPauseString(client, String:buffer[], maxlen)
 {
-	new Float:fTime = g_fPauseTime[client] - g_fStartTime[client];
+	new Float:fTime = g_fPauseTime[client];
 	
 	decl String:sTime[32];
 	FormatPlayerTime(fTime, sTime, sizeof(sTime), false, 0);
@@ -1774,7 +1828,7 @@ SpecCountToArrays(clients[], admins[])
 {
 	for(new client = 1; client <= MaxClients; client++)
 	{
-		if(IsClientInGame(client))
+		if(IsClientInGame(client) && !IsFakeClient(client))
 		{
 			if(!IsPlayerAlive(client))
 			{
@@ -2039,9 +2093,9 @@ public Native_StartTimer(Handle:plugin, numParams)
 		g_goodSync[client]       = 0;
 		g_goodSyncVel[client]    = 0;
 		
-		g_Type[client]        = Type;
-		g_bTiming[client]     = true;
-		g_fStartTime[client]  = GetEngineTime();
+		g_Type[client]         = Type;
+		g_bTiming[client]      = true;
+		g_fCurrentTime[client] = 0.0;
 		
 		Call_StartForward(g_fwdOnTimerStart_Post);
 		Call_PushCell(client);
@@ -2371,7 +2425,7 @@ GetStyle(client)
 
 Float:GetClientTimer(client)
 {
-	return GetEngineTime() - g_fStartTime[client];
+	return g_fCurrentTime[client];
 }
 
 ReadStyleConfig()
@@ -2435,6 +2489,8 @@ ReadStyleConfig()
 				g_StyleConfig[Key][GunJump]                = bool:KvGetNum(kv, "gunjump");
 				KvGetString(kv, "gunjump_weapon", g_StyleConfig[Key][GunJump_Weapon], 64);
 				g_StyleConfig[Key][UnrealPhys]             = bool:KvGetNum(kv, "unrealphys");
+				g_StyleConfig[Key][AirAcceleration]       = KvGetNum(kv, "aa", 100);
+				g_StyleConfig[Key][EnableBunnyhopping]    = bool:KvGetNum(kv, "enablebhop", true);
 				
 				KvGoBack(kv);
 				Key++;
@@ -4011,7 +4067,7 @@ CheckSync(client, buttons, Float:vel[3], Float:angles[3])
 }
 
 public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon)
-{	
+{
 	g_UnaffectedButtons[client] = buttons;
 	
 	if(IsPlayerAlive(client))
@@ -4047,6 +4103,28 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 					g_HSWCounter[client] = GetEngineTime();
 				
 				if(((GetEngineTime() - g_HSWCounter[client] > 0.4) || vel[0] <= 0) && !(GetEntityFlags(client) & FL_ONGROUND))
+				{
+					bRestrict = true;
+				}
+			}
+			else if (StrEqual(g_StyleConfig[Style][Special_Key], "surfhsw-aw-sd", true))
+			{
+				if((vel[0] > 0.0 && vel[1] < 0.0) || (vel[0] < 0.0 && vel[1] > 0.0)) // If pressing w and a or s and d, keep unrestricted
+				{
+					g_HSWCounter[client] = GetEngineTime();
+				}
+				else if(GetEngineTime() - g_HSWCounter[client] > 0.3) // Restrict if player hasn't held the right buttons for too long
+				{
+					bRestrict = true;
+				}
+			}
+			else if (StrEqual(g_StyleConfig[Style][Special_Key], "surfhsw-as-wd", true))
+			{
+				if ((vel[0] < 0.0 && vel[1] < 0.0) || (vel[0] > 0.0 && vel[1] > 0.0))
+				{
+					g_HSWCounter[client] = GetEngineTime();
+				}
+				else if(GetEngineTime() - g_HSWCounter[client] > 0.3)
 				{
 					bRestrict = true;
 				}
@@ -4129,6 +4207,8 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 					SetEntityMoveType(client, MOVETYPE_WALK);
 				}
 			}
+			
+			g_fCurrentTime[client] += GetTickInterval();
 		}
 		
 		// auto bhop check

@@ -905,11 +905,13 @@ public Action:SM_Keys(client, args)
 	return Plugin_Handled;
 }
 
-GetKeysMessage(client, String:sKeys[], maxlen)
+GetKeysMessage(client, mouse, String:sKeys[], maxlen)
 {
-	new buttons = Timer_GetButtons(client);
+	new buttons = GetClientButtons(client);
 	
 	new String:sForward[1], String:sBack[1], String:sMoveleft[2], String:sMoveright[2];
+	new String:sTurnLeft[8], String:sTurnRight[8];
+	
 	if(buttons & IN_FORWARD)
 		sForward[0] = 'W';
 	else
@@ -937,12 +939,30 @@ GetKeysMessage(client, String:sKeys[], maxlen)
 		sMoveright[1] = 32;
 	}
 	
+	if(mouse < 0)
+	{
+		FormatEx(sTurnLeft, sizeof(sTurnLeft), "←");
+	}
+	else
+	{
+		FormatEx(sTurnLeft, sizeof(sTurnLeft), "    ");
+	}
+	
+	if(mouse > 0)
+	{
+		FormatEx(sTurnRight, sizeof(sTurnRight), "→");
+	}
+	else
+	{
+		FormatEx(sTurnRight, sizeof(sTurnRight), "    ");
+	}
+	
 	if(buttons & IN_BACK)
 		sBack[0] = 'S';
 	else
 		sBack[0] = 32;
 	
-	Format(sKeys, maxlen, "   %s\n%s     %s\n    %s", sForward, sMoveleft, sMoveright, sBack);
+	Format(sKeys, maxlen, "   %s\n%s%s     %s%s\n    %s", sForward, sTurnLeft, sMoveleft, sMoveright, sTurnRight, sBack);
 	
 	if(buttons & IN_DUCK)
 		Format(sKeys, maxlen, "%s\nDUCK", sKeys);
@@ -1126,10 +1146,13 @@ public Action:Hook_SetTransmit(entity, client)
 		if(g_Settings[client] & HIDE_PLAYERS)
 			return Plugin_Handled;
 		
-		if(GetEntityMoveType(entity) == MOVETYPE_NOCLIP && !IsFakeClient(entity))
-			return Plugin_Handled;
+		//if(GetEntityMoveType(entity) == MOVETYPE_NOCLIP && !IsFakeClient(entity))
+		//	return Plugin_Handled;
 		
 		if(!IsPlayerAlive(entity))
+			return Plugin_Handled;
+		
+		if(IsPlayerAlive(client) && IsFakeClient(entity))
 			return Plugin_Handled;
 	}
 	
@@ -1157,7 +1180,7 @@ public Action:Hook_OnTakeDamage(victim, &attacker, &inflictor, &Float:damage, &d
 	return Plugin_Handled;
 }
  
-public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon)
+public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon, &subtype, &cmdnum, &tickcount, &seed, mouse[2])
 {	
 	// keys check
 	if(g_Settings[client] & SHOW_KEYS)
@@ -1167,7 +1190,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 			new String:keys[64];
 			if(IsPlayerAlive(client))
 			{
-				GetKeysMessage(client, keys, sizeof(keys));
+				GetKeysMessage(client, mouse[0], keys, sizeof(keys));
 				PrintCenterText(client, keys);
 			}
 			else
@@ -1177,7 +1200,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
 				
 				if((0 < Target <= MaxClients) && (ObserverMode == 4 || ObserverMode == 5))
 				{
-					GetKeysMessage(Target, keys, sizeof(keys));
+					GetKeysMessage(Target, mouse[0], keys, sizeof(keys));
 					PrintCenterText(client, keys);
 				}
 			}

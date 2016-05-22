@@ -46,7 +46,9 @@ enum _:StyleConfig
 	String:Special_Key[32],
 	bool:GunJump,
 	String:GunJump_Weapon[64],
-	bool:UnrealPhys
+	bool:UnrealPhys,
+	AirAcceleration,
+	bool:EnableBunnyhopping
 };
 
 /*

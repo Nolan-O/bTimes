@@ -63,15 +63,17 @@ new 	Handle:g_hChatRanksRanges,
 new	Handle:g_hCustomSteams,
 	Handle:g_hCustomNames,
 	Handle:g_hCustomMessages,
-	Handle:g_hCustomUse,
-	g_ClientUseCustom[MAXPLAYERS + 1];
+	Handle:g_hCustomUse;
 	
 new	bool:g_bNewMessage;
 	
 // Settings
-new	Handle:g_hUseCustomChat,
-	Handle:g_hUseChatRanks,
-	Handle:g_hAllChat;
+new	Handle:g_hUseChatRanks,
+	Handle:g_hAllChat,
+	Handle:g_hCookieUseMessage,
+	Handle:g_hCookieUseName,
+	Handle:g_hCookieName,
+	Handle:g_hCookieMessage;
 	
 // Points recalculation
 new	g_RecalcTotal,
@@ -93,7 +95,6 @@ public OnPluginStart()
 	DB_Connect();
 	
 	// Cvars
-	g_hUseCustomChat  = CreateConVar("timer_enablecc", "1", "Allows specific players to use custom chat. Enabled by !enablecc <steamid> command.", 0, true, 0.0, true, 1.0);
 	g_hUseChatRanks   = CreateConVar("timer_chatranks", "1", "Allows players to use chat ranks specified in sourcemod/configs/timer/ranks.cfg", 0, true, 0.0, true, 1.0);
 	g_hAllChat        = CreateConVar("timer_allchat", "1", "Enable's allchat", 0, true, 0.0, true, 1.0);
 	
@@ -109,9 +110,9 @@ public OnPluginStart()
 	RegConsoleCmdEx("sm_chatranks", SM_Rankings, "Shows the chat ranking tags and the ranks required to get them.");
 	
 	// Admin commands
-	RegAdminCmd("sm_enablecc", SM_EnableCC, ADMFLAG_ROOT, "Enable custom chat for a specified SteamID.");
-	RegAdminCmd("sm_disablecc", SM_DisableCC, ADMFLAG_ROOT, "Disable custom chat for a specified SteamID.");
-	RegAdminCmd("sm_cclist", SM_CCList, ADMFLAG_CHEATS, "Shows a list of players with custom chat privileges.");
+	//RegAdminCmd("sm_enablecc", SM_EnableCC, ADMFLAG_ROOT, "Enable custom chat for a specified SteamID.");
+	//RegAdminCmd("sm_disablecc", SM_DisableCC, ADMFLAG_ROOT, "Disable custom chat for a specified SteamID.");
+	//RegAdminCmd("sm_cclist", SM_CCList, ADMFLAG_CHEATS, "Shows a list of players with custom chat privileges.");
 	RegAdminCmd("sm_recalcpts", SM_RecalcPts, ADMFLAG_CHEATS, "Recalculates all the points in the database.");
 	
 	// Admin
@@ -139,6 +140,28 @@ public OnPluginStart()
 	g_MapList = ReadMapList();
 	
 	RegAdminCmd("sm_showcycle", SM_ShowCycle, ADMFLAG_GENERIC);
+	
+	g_hCookieUseMessage = RegClientCookie("cc_usemessage", "Client settings for whether or not to use their custom chat message color.", CookieAccess_Public);
+	g_hCookieUseName    = RegClientCookie("cc_usename", "Client settings for whether ot not to use their custom name.", CookieAccess_Public);
+	g_hCookieMessage    = RegClientCookie("cc_message", "Custom chat message.", CookieAccess_Public);
+	g_hCookieName       = RegClientCookie("cc_name", "Custom chat name.", CookieAccess_Public);
+}
+
+public OnClientCookiesCached(client)
+{
+	new String:sCookie[8];
+	GetClientCookie(client, g_hCookieName, sCookie, sizeof(sCookie));
+	if(strlen(sCookie) == 0)
+	{
+		SetClientCookie(client, g_hCookieName, "{rand}{name}");
+	}
+	
+	GetClientCookie(client, g_hCookieMessage, sCookie, sizeof(sCookie));
+	if(strlen(sCookie) == 0)
+	{
+		SetClientCookie(client, g_hCookieMessage, "{rand}");
+	}
+	
 }
 
 public Action:SM_ShowCycle(client, args)
@@ -187,19 +210,13 @@ public OnMapStart()
 	CreateTimer(1.0, UpdateDeaths, _, TIMER_REPEAT | TIMER_FLAG_NO_MAPCHANGE);
 }
 
-public OnClientAuthorized(client, const String:auth[])
+public OnClientPostAdminCheck(client)
 {
-	new idx = FindStringInArray(g_hCustomSteams, auth);
-	if(idx != -1)
-	{
-		g_ClientUseCustom[client]  = GetArrayCell(g_hCustomUse, idx);
-	}
+	
 }
 
 public bool:OnClientConnect(client)
 {
-	g_ClientUseCustom[client]  = 0;
-	
 	for(new Type; Type < MAX_TYPES; Type++)
 	{
 		for(new Style; Style < MAX_STYLES; Style++)
@@ -346,17 +363,10 @@ FormatTag(client, String:buffer[], maxlength)
 
 GetChatName(client, String:buffer[], maxlength)
 {	
-	if((g_ClientUseCustom[client] & CC_HASCC) && (g_ClientUseCustom[client] & CC_NAME) && GetConVarBool(g_hUseCustomChat))
+	if(GetAdminFlag(GetUserAdmin(client), Admin_Reservation, Access_Effective) && GetCookieBool(client, g_hCookieUseName))
 	{
-		decl String:sAuth[32];
-		GetClientAuthString(client, sAuth, sizeof(sAuth));
-		
-		new idx = FindStringInArray(g_hCustomSteams, sAuth);
-		if(idx != -1)
-		{
-			GetArrayString(g_hCustomNames, idx, buffer, maxlength);
-			FormatTag(client, buffer, maxlength);
-		}
+		GetClientCookie(client, g_hCookieName, buffer, MAXLENGTH_NAME);
+		FormatTag(client, buffer, maxlength);
 	}
 	else if(GetConVarBool(g_hUseChatRanks))
 	{
@@ -375,19 +385,12 @@ GetChatName(client, String:buffer[], maxlength)
 
 GetChatMessage(client, String:message[], maxlength)
 {
-	if((g_ClientUseCustom[client] & CC_HASCC) && (g_ClientUseCustom[client] & CC_MSGCOL) && GetConVarBool(g_hUseCustomChat))
+	if(GetAdminFlag(GetUserAdmin(client), Admin_Reservation, Access_Effective) && GetCookieBool(client, g_hCookieUseMessage))
 	{
-		decl String:sAuth[32];
-		GetClientAuthString(client, sAuth, sizeof(sAuth));
-		
-		new idx = FindStringInArray(g_hCustomSteams, sAuth);
-		if(idx != -1)
-		{
-			decl String:buffer[MAXLENGTH_MESSAGE];
-			GetArrayString(g_hCustomMessages, idx, buffer, MAXLENGTH_MESSAGE);
-			FormatTag(client, buffer, maxlength);
-			Format(message, maxlength, "%s%s", buffer, message);
-		}
+		decl String:buffer[MAXLENGTH_MESSAGE];
+		GetClientCookie(client, g_hCookieMessage, buffer, sizeof(buffer));
+		FormatTag(client, buffer, maxlength);
+		Format(message, maxlength, "%s%s", buffer, message);
 	}
 }
 
@@ -924,18 +927,15 @@ public Action:SM_ColoredName(client, args)
 	{
 		SetIsSpamming(client, 1.0);
 		
-		if(g_ClientUseCustom[client] & CC_HASCC)
+		if(GetAdminFlag(GetUserAdmin(client), Admin_Reservation, Access_Effective))
 		{
-			decl String:query[512], String:sAuth[32];
-			GetClientAuthString(client, sAuth, sizeof(sAuth));
-			
 			if(args == 0)
 			{
 				// Get new ccname setting
-				g_ClientUseCustom[client] ^= CC_NAME;
+				SetCookieBool(client, g_hCookieUseName, !GetCookieBool(client, g_hCookieUseName));
 				
 				// Acknowledge change to client
-				if(g_ClientUseCustom[client] & CC_NAME)
+				if(GetCookieBool(client, g_hCookieUseName))
 				{
 					PrintColorText(client, "%s%sColored name enabled.",
 						g_msg_start,
@@ -947,40 +947,13 @@ public Action:SM_ColoredName(client, args)
 						g_msg_start,
 						g_msg_textcol);
 				}
-				
-				// Set the new ccname setting
-				new idx = FindStringInArray(g_hCustomSteams, sAuth);
-				
-				if(idx != -1)
-					SetArrayCell(g_hCustomUse, idx, g_ClientUseCustom[client]);
-				
-				// Format the query
-				FormatEx(query, sizeof(query), "UPDATE players SET ccuse=%d WHERE SteamID='%s'",
-					g_ClientUseCustom[client],
-					sAuth);
 			}
 			else
 			{
 				// Get new ccname
 				decl String:sArg[250];
 				GetCmdArgString(sArg, sizeof(sArg));
-				decl String:sEscapeArg[(strlen(sArg)*2)+1];
-				
-				// Escape the ccname for SQL insertion
-				SQL_LockDatabase(g_DB);
-				SQL_EscapeString(g_DB, sArg, sEscapeArg, (strlen(sArg)*2)+1);
-				SQL_UnlockDatabase(g_DB);
-				
-				// Modify player's ccname
-				new idx = FindStringInArray(g_hCustomSteams, sAuth);
-				
-				if(idx != -1)
-					SetArrayString(g_hCustomNames, idx, sEscapeArg);
-				
-				// Prepare query
-				FormatEx(query, sizeof(query), "UPDATE players SET ccname='%s' WHERE SteamID='%s'",
-					sEscapeArg,
-					sAuth);
+				SetClientCookie(client, g_hCookieName, sArg);
 					
 				PrintColorText(client, "%s%sColored name set to %s%s",
 					g_msg_start,
@@ -988,20 +961,9 @@ public Action:SM_ColoredName(client, args)
 					g_msg_varcol,
 					sArg);
 			}
-			
-			// Execute query
-			SQL_TQuery(g_DB, ColoredName_Callback, query);
 		}
 	}
 	return Plugin_Handled;
-}
-
-public ColoredName_Callback(Handle:owner, Handle:hndl, String:error[], any:data)
-{
-	if(hndl == INVALID_HANDLE)
-	{
-		LogError(error);
-	}
 }
 
 public Action:SM_ColoredMsg(client, args)
@@ -1009,25 +971,13 @@ public Action:SM_ColoredMsg(client, args)
 	if(!IsSpamming(client))
 	{
 		SetIsSpamming(client, 1.0);
-		if(g_ClientUseCustom[client] & CC_HASCC)
+		if(GetAdminFlag(GetUserAdmin(client), Admin_Reservation, Access_Effective))
 		{
-			decl String:query[512], String:sAuth[32];
-			GetClientAuthString(client, sAuth, sizeof(sAuth));
-			
 			if(args == 0)
 			{
-				g_ClientUseCustom[client] ^= CC_MSGCOL;
+				SetCookieBool(client, g_hCookieUseMessage, !GetCookieBool(client, g_hCookieUseMessage));
 				
-				new idx = FindStringInArray(g_hCustomSteams, sAuth);
-				
-				if(idx != -1)
-					SetArrayCell(g_hCustomUse, idx, g_ClientUseCustom[client]);
-				
-				FormatEx(query, sizeof(query), "UPDATE players SET ccuse=%d WHERE SteamID='%s'",
-					g_ClientUseCustom[client],
-					sAuth);
-					
-				if(g_ClientUseCustom[client] & CC_MSGCOL)
+				if(GetCookieBool(client, g_hCookieUseMessage))
 					PrintColorText(client, "%s%sColored message enabled.",
 						g_msg_start,
 						g_msg_textcol);
@@ -1040,20 +990,7 @@ public Action:SM_ColoredMsg(client, args)
 			{
 				decl String:sArg[128];
 				GetCmdArgString(sArg, sizeof(sArg));
-				decl String:sEscapeArg[(strlen(sArg)*2)+1];
-				
-				SQL_LockDatabase(g_DB);
-				SQL_EscapeString(g_DB, sArg, sEscapeArg, (strlen(sArg)*2)+1);
-				SQL_UnlockDatabase(g_DB);
-					
-				new idx = FindStringInArray(g_hCustomSteams, sAuth);
-				
-				if(idx != -1)
-					SetArrayString(g_hCustomMessages, idx, sEscapeArg);
-				
-				FormatEx(query, sizeof(query), "UPDATE players SET ccmsgcol='%s' WHERE SteamID='%s'",
-					sEscapeArg,
-					sAuth);
+				SetClientCookie(client, g_hCookieMessage, sArg);
 					
 				PrintColorText(client, "%s%sColored message set to %s%s",
 					g_msg_start,
@@ -1061,9 +998,6 @@ public Action:SM_ColoredMsg(client, args)
 					g_msg_varcol,
 					sArg);
 			}
-			
-			// Execute query
-			SQL_TQuery(g_DB, ColoredName_Callback, query);
 		}
 	}
 	
@@ -1106,6 +1040,7 @@ public Action:SM_ReloadRanks(client, args)
 	return Plugin_Handled;
 }
 
+/*
 public Action:SM_EnableCC(client, args)
 {
 	decl String:sArg[256];
@@ -1213,8 +1148,6 @@ EnableCustomChat(const String:sAuth[])
 			GetClientAuthString(client, sAuth2, sizeof(sAuth2));
 			if(StrEqual(sAuth, sAuth2))
 			{
-				g_ClientUseCustom[client]  = CC_HASCC|CC_MSGCOL|CC_NAME;
-				
 				PrintColorText(client, "%s%sYou have been given custom chat privileges. Type sm_cchelp or ask for help to learn how to use it.",
 					g_msg_start,
 					g_msg_textcol);
@@ -1358,8 +1291,6 @@ DisableCustomChat(const String:sAuth[])
 			GetClientAuthString(client, sAuth2, sizeof(sAuth2));
 			if(StrEqual(sAuth, sAuth2))
 			{
-				g_ClientUseCustom[client]  = 0;
-				
 				PrintColorText(client, "%s%sYou have lost your custom chat privileges.",
 					g_msg_start,
 					g_msg_textcol);
@@ -1375,6 +1306,7 @@ public DisableCC_Callback(Handle:owner, Handle:hndl, String:error[], any:data)
 		LogError(error);
 	}
 }
+
 
 public Action:SM_CCList(client, args)
 {
@@ -1460,6 +1392,7 @@ public Menu_CCList(Handle:menu, MenuAction:action, param1, param2)
 	else if (action == MenuAction_End)
 		CloseHandle(menu);
 }
+*/
 
 public Action:SM_Rankings(client, args)
 {
@@ -1602,7 +1535,7 @@ public Native_EnableCustomChat(Handle:plugin, numParams)
 	decl String:sAuth[32];
 	GetNativeString(1, sAuth, sizeof(sAuth));
 	
-	EnableCustomChat(sAuth);
+	//EnableCustomChat(sAuth);
 }
 
 public Native_DisableCustomChat(Handle:plugin, numParams)
@@ -1610,7 +1543,7 @@ public Native_DisableCustomChat(Handle:plugin, numParams)
 	decl String:sAuth[32];
 	GetNativeString(1, sAuth, sizeof(sAuth));
 	
-	DisableCustomChat(sAuth);
+	//DisableCustomChat(sAuth);
 }
 
 public Native_SteamIDHasCustomChat(Handle:plugin, numParams)

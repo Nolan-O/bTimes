@@ -114,6 +114,77 @@ native SetIsSpamming(client, Float:BlockTime);
 */
 native RegisterCommand(const String:sCommand[], const String:sDescription[]);
 
+#include <clientprefs>
+
+/**
+* A simpler way of getting the bool value of a client's cookie.
+* 
+* @param client        Client index.
+* @param cookie        Handle to the cookie.
+* 
+* @return              Boolean value of the client's cookie, false if client's cookies are not cached.
+*/
+stock bool:GetCookieBool(client, Handle:cookie)
+{
+	if(AreClientCookiesCached(client))
+	{
+		decl String:sCookie[16];
+		GetClientCookie(client, cookie, sCookie, sizeof(sCookie));
+		
+		if(strlen(sCookie) == 0)
+			return true;
+		else
+			return bool:StringToInt(sCookie);
+	}
+	
+	return true;
+}
+
+stock GetCookieInt(client, Handle:cookie)
+{
+	if(AreClientCookiesCached(client))
+	{
+		new String:sCookie[16];
+		GetClientCookie(client, cookie, sCookie, sizeof(sCookie));
+		
+		if(strlen(sCookie) == 0)
+			return 0;
+		else
+			return StringToInt(sCookie);
+	}
+	
+	return true;
+}
+
+/**
+* A simpler of of setting a client's cookie with a boolean value
+* 
+* @param client        Client index.
+* @param cookie        Handle to the cookie.
+* @param value         Value to set the client's cookie to.
+* 
+* @noreturn
+*/
+stock SetCookieBool(client, Handle:cookie, bool:value)
+{
+	if(AreClientCookiesCached(client))
+	{
+		decl String:sCookie[32];
+		IntToString(value, sCookie, sizeof(sCookie));
+		SetClientCookie(client, cookie, sCookie);
+	}
+}
+
+stock SetCookieInt(client, Handle:cookie, value)
+{
+	if(AreClientCookiesCached(client))
+	{
+		decl String:sCookie[32];
+		IntToString(value, sCookie, sizeof(sCookie));
+		SetClientCookie(client, cookie, sCookie);
+	}
+}
+
 #include <console>
 
 /*

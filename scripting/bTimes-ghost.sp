@@ -45,7 +45,8 @@ new 	Handle:g_hGhost[MAX_TYPES][MAX_STYLES],
 	Float:g_fPauseTime[MAX_TYPES][MAX_STYLES],
 	g_iBotQuota,
 	bool:g_bGhostLoadedOnce[MAX_TYPES][MAX_STYLES],
-	bool:g_bGhostLoaded[MAX_TYPES][MAX_STYLES];
+	bool:g_bGhostLoaded[MAX_TYPES][MAX_STYLES],
+	bool:g_bReplayFileExists[MAX_TYPES][MAX_STYLES];
 	
 new 	Float:g_fStartTime[MAX_TYPES][MAX_STYLES];
 
@@ -81,7 +82,6 @@ public OnPluginStart()
 	AutoExecConfig(true, "ghost", "timer");
 	
 	// Events
-	HookEvent("player_changename", Event_PlayerChangeName);
 	HookEvent("player_spawn", Event_PlayerSpawn);
 	
 	// Create admin command that deletes the ghost
@@ -178,7 +178,18 @@ public OnMapStart()
 				g_GhostFrame[Type][Style] = 0;
 				g_GhostPlayerID[Type][Style] = 0;
 				g_bGhostLoaded[Type][Style] = false;
-				Format(g_sGhost[Type][Style], sizeof(g_sGhost[][]), "Unknown");
+				
+				new String:sNameStart[64];
+				if(Type == TIMER_MAIN)
+				{
+					GetStyleName(Style, sNameStart, sizeof(sNameStart));
+				}
+				else
+				{
+					GetTypeName(Type, sNameStart, sizeof(sNameStart));
+				}
+				
+				FormatEx(g_sGhost[Type][Style], sizeof(g_sGhost[][]), "%s - No Record", sNameStart);
 			}
 		}
 	}
@@ -292,31 +303,6 @@ public Action:OnTrigger(entity, other)
 	return Plugin_Continue;
 }
 
-public OnPlayerIDLoaded(client)
-{
-	new PlayerID = GetPlayerID(client);
-	
-	for(new Type; Type < MAX_TYPES; Type++)
-	{
-		for(new Style; Style < MAX_STYLES; Style++)
-		{
-			if(Style_CanUseReplay(Style, Type))
-			{
-				if(PlayerID == g_GhostPlayerID[Type][Style])
-				{
-					decl String:sTime[32];
-					FormatPlayerTime(g_fGhostTime[Type][Style], sTime, sizeof(sTime), false, 0);
-					
-					decl String:sName[20];
-					GetClientName(client, sName, sizeof(sName));
-					
-					FormatEx(g_sGhost[Type][Style], sizeof(g_sGhost[][]), "%s - %s", sName, sTime);
-				}
-			}
-		}
-	}
-}
-
 public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 {
 	// Find out if it's the bot added from another time
@@ -338,6 +324,7 @@ public bool:OnClientConnect(client, String:rejectmsg[], maxlen)
 			}
 		}
 	}
+	
 	return true;
 }
 
@@ -378,56 +365,6 @@ public OnTimesDeleted(Type, Style, RecordOne, RecordTwo, Handle:Times)
 			}
 		}
 	}
-}
-
-public Action:Event_PlayerChangeName(Handle:event, const String:name[], bool:dontBroadcast)
-{
-	new client = GetClientOfUserId(GetEventInt(event, "userid"));
-	
-	if(IsClientInGame(client))
-	{
-		new PlayerID = GetPlayerID(client);
-		
-		if(PlayerID != 0)
-		{
-			for(new Type; Type < MAX_TYPES; Type++)
-			{
-				for(new Style; Style < MAX_STYLES; Style++)
-				{
-					if(Style_CanUseReplay(Style, Type))
-					{
-						if(PlayerID == g_GhostPlayerID[Type][Style])
-						{
-							decl String:sNewName[20];
-							GetEventString(event, "newname", sNewName, sizeof(sNewName));
-							
-							new Handle:pack;
-							CreateDataTimer(0.1, Timer_ChangeName, pack);
-							WritePackCell(pack, Type);
-							WritePackCell(pack, Style);
-							WritePackString(pack, sNewName);
-						}
-					}
-				}
-			}
-		}
-	}
-}
-
-public Action:Timer_ChangeName(Handle:timer, Handle:data)
-{
-	ResetPack(data);
-	
-	new Type  = ReadPackCell(data);
-	new Style = ReadPackCell(data);
-	
-	decl String:sName[MAX_NAME_LENGTH];
-	ReadPackString(data, sName, sizeof(sName));
-	
-	decl String:sTime[32];
-	FormatPlayerTime(g_fGhostTime[Type][Style], sTime, sizeof(sTime), false, 0);
-	
-	Format(g_sGhost[Type][Style], sizeof(g_sGhost[][]), "%s - %s", sName, sTime);
 }
 
 public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroadcast)
@@ -537,6 +474,36 @@ public Menu_DeleteGhost(Handle:menu, MenuAction:action, param1, param2)
 		CloseHandle(menu);
 }
 
+AssignToReplay(client)
+{
+	new bool:bAssigned;
+	for(new Type; Type < MAX_TYPES; Type++)
+	{
+		for(new Style; Style < MAX_STYLES; Style++)
+		{
+			if(g_Ghost[Type][Style] == 0 || !IsClientConnected(g_Ghost[Type][Style]) || !IsFakeClient(g_Ghost[Type][Style]))
+			{
+				if(Style_CanUseReplay(Style, Type))
+				{
+					g_Ghost[Type][Style] = client;
+					bAssigned = true;
+					break;
+				}
+			}
+		}
+		
+		if(bAssigned == true)
+		{
+			break;
+		}
+	}
+	
+	if(bAssigned == false)
+	{
+		KickClient(client);
+	}
+}
+
 public Action:GhostCheck(Handle:timer, any:data)
 {
 	new Handle:hBotQuota = FindConVar("bot_quota");
@@ -546,6 +513,36 @@ public Action:GhostCheck(Handle:timer, any:data)
 		ServerCommand("bot_quota %d", g_iBotQuota);
 	
 	CloseHandle(hBotQuota);
+	
+	for(new client = 1; client <= MaxClients; client++)
+	{
+		if(IsClientConnected(client) && IsFakeClient(client) && !IsClientSourceTV(client))
+		{
+			new bool:bIsReplay;
+			
+			for(new Type; Type < MAX_TYPES; Type++)
+			{
+				for(new Style; Style < MAX_STYLES; Style++)
+				{
+					if(client == g_Ghost[Type][Style])
+					{
+						bIsReplay = true;
+						break;
+					}
+				}
+				
+				if(bIsReplay == true)
+				{
+					break;
+				}
+			}
+			
+			if(!bIsReplay)
+			{
+				AssignToReplay(client);
+			}
+		}
+	}
 	
 	for(new Type; Type < MAX_TYPES; Type++)
 	{
@@ -557,14 +554,16 @@ public Action:GhostCheck(Handle:timer, any:data)
 				{
 					if(IsClientInGame(g_Ghost[Type][Style]))
 					{
+						SetEntProp(g_Ghost[Type][Style], Prop_Data, "m_iFrags", 0);
+						SetEntProp(g_Ghost[Type][Style], Prop_Data, "m_iDeaths", 0);
+					
 						// Check clan tag
-						decl String:sClanTag[64], String:sCvarClanTag[64];
+						decl String:sClanTag[64];
 						CS_GetClientClanTag(g_Ghost[Type][Style], sClanTag, sizeof(sClanTag));
-						GetConVarString(g_hGhostClanTag[Type][Style], sCvarClanTag, sizeof(sCvarClanTag));
 						
-						if(!StrEqual(sCvarClanTag, sClanTag))
+						if(!StrEqual("Replay -", sClanTag))
 						{
-							CS_SetClientClanTag(g_Ghost[Type][Style], sCvarClanTag);
+							CS_SetClientClanTag(g_Ghost[Type][Style], "Replay -");
 						}
 						
 						// Check name
@@ -579,10 +578,21 @@ public Action:GhostCheck(Handle:timer, any:data)
 						}
 						
 						// Check if ghost is dead
-						if(!IsPlayerAlive(g_Ghost[Type][Style]))
+						if(g_bReplayFileExists[Type][Style])
 						{
-							CS_RespawnPlayer(g_Ghost[Type][Style]);
+							if(!IsPlayerAlive(g_Ghost[Type][Style]))
+							{
+								CS_RespawnPlayer(g_Ghost[Type][Style]);
+							}
 						}
+						else if(!g_bReplayFileExists[Type][Style])
+						{
+							if(IsPlayerAlive(g_Ghost[Type][Style]))
+							{
+								FakeClientCommand(g_Ghost[Type][Style], "kill");
+							}
+						}
+						
 						
 						// Display ghost's current time to spectators
 						new iSize = GetArraySize(g_hGhost[Type][Style]);
@@ -602,7 +612,13 @@ public Action:GhostCheck(Handle:timer, any:data)
 											new Float:time = GetEngineTime() - g_fStartTime[Type][Style];
 											decl String:sTime[32];
 											FormatPlayerTime(time, sTime, sizeof(sTime), false, 0);
-											PrintHintText(client, "Replay\n%s", sTime);
+											
+											new String:sName[MAX_NAME_LENGTH];
+											GetNameFromPlayerID(g_GhostPlayerID[Type][Style], sName, sizeof(sName));
+											
+											new Float:fVel = GetClientVelocity(g_Ghost[Type][Style], true, true, false);
+											
+											PrintHintText(client, "[Replay]\n%s\n%s\nSpeed: %d", sName, sTime, RoundToFloor(fVel));
 										}
 									}
 								}
@@ -689,6 +705,7 @@ LoadGhost()
 				
 				if(FileExists(sPath))
 				{
+					g_bReplayFileExists[Type][Style] = true;
 					// Open file for reading
 					new Handle:hFile = OpenFile(sPath, "r");
 					
@@ -732,9 +749,11 @@ LoadGhost()
 						Type,
 						Style);
 					SQL_TQuery(g_DB, LoadGhost_Callback, query, pack);
+					
 				}
 				else
 				{
+					g_bReplayFileExists[Type][Style] = false;
 					g_bGhostLoaded[Type][Style] = true;
 				}
 			}
@@ -765,10 +784,18 @@ public LoadGhost_Callback(Handle:owner, Handle:hndl, String:error[], any:data)
 				if(g_fGhostTime[Type][Style] == 0.0)
 					g_fGhostTime[Type][Style] = SQL_FetchFloat(hndl, 1);
 				
-				decl String:sTime[32];
+				decl String:sNameStart[MAX_NAME_LENGTH], String:sTime[32];
 				FormatPlayerTime(g_fGhostTime[Type][Style], sTime, sizeof(sTime), false, 0);
+				if(Type == TIMER_MAIN)
+				{
+					GetStyleName(Style, sNameStart, sizeof(sNameStart));
+				}
+				else
+				{
+					GetTypeName(Type, sNameStart, sizeof(sNameStart));
+				}
 				
-				Format(g_sGhost[Type][Style], sizeof(g_sGhost[][]), "%s - %s", sName, sTime);
+				FormatEx(g_sGhost[Type][Style], sizeof(g_sGhost[][]), "%s - %s", sNameStart, sTime);
 			}
 			
 			g_bGhostLoaded[Type][Style] = true;
@@ -844,10 +871,29 @@ SaveGhost(client, Float:Time, Type, Style)
 	
 	g_GhostFrame[Type][Style] = 0;
 	
-	decl String:name[20], String:sTime[32];
-	GetClientName(client, name, sizeof(name));
+	decl String:sNameStart[MAX_NAME_LENGTH], String:sTime[32];
 	FormatPlayerTime(g_fGhostTime[Type][Style], sTime, sizeof(sTime), false, 0);
-	Format(g_sGhost[Type][Style], sizeof(g_sGhost[][]), "%s - %s", name, sTime);
+	if(Type == TIMER_MAIN)
+	{
+		GetStyleName(Style, sNameStart, sizeof(sNameStart));
+	}
+	else
+	{
+		GetTypeName(Type, sNameStart, sizeof(sNameStart));
+	}
+	
+	FormatEx(g_sGhost[Type][Style], sizeof(g_sGhost[][]), "%s - %s", sNameStart, sTime);
+	
+	g_bReplayFileExists[Type][Style] = true;
+	
+	if(g_Ghost[Type][Style] != 0)
+	{
+		if(!IsPlayerAlive(g_Ghost[Type][Style]))
+		{
+			CS_RespawnPlayer(g_Ghost[Type][Style]);
+		}
+	}
+	
 }
 
 DeleteGhost(Type, Style)
@@ -863,9 +909,22 @@ DeleteGhost(Type, Style)
 	{
 		g_fGhostTime[Type][Style] = 0.0;
 		ClearArray(g_hGhost[Type][Style]);
-		Format(g_sGhost[Type][Style], sizeof(g_sGhost[][]), "Unknown");
-		CS_RespawnPlayer(g_Ghost[Type][Style]);
+		new String:sNameStart[64];
+		if(Type == TIMER_MAIN)
+		{
+			GetStyleName(Style, sNameStart, sizeof(sNameStart));
+		}
+		else
+		{
+			GetTypeName(Type, sNameStart, sizeof(sNameStart));
+		}
+		
+		FormatEx(g_sGhost[Type][Style], sizeof(g_sGhost[][]), "%s - No Record", sNameStart);
+		//CS_RespawnPlayer(g_Ghost[Type][Style]);
+		FakeClientCommand(g_Ghost[Type][Style], "kill");
 	}
+	
+	g_bReplayFileExists[Type][Style] = false;
 }
 
 DB_Connect()
