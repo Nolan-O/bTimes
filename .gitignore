@@ -1,0 +1,5 @@
+#So that you can build the timer in your working directory without issues.
+*.smx
+*.exe
+*.cfg
+*.dat
