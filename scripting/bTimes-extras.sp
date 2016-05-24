@@ -2,8 +2,8 @@
 #include <sdktools>
 
 public Plugin:myinfo = {
-    name = "Weapons and cvar enforcement.",
-    description = "Giveth and taketh.",
+    name = "[bTimes] Extras",
+    description = "Weapon commands and cvar enforcement",
     author = "",
     version = "1.0",
     url = ""
