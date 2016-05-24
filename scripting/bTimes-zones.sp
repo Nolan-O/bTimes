@@ -165,6 +165,8 @@ public OnPluginStart()
 	RegConsoleCmdEx("sm_start", SM_R, "Teleports you to the starting zone");
 	RegConsoleCmdEx("sm_end", SM_End, "Teleports your to the end zone");
 	RegConsoleCmdEx("sm_endb", SM_EndB, "Teleports you to the bonus end zone");
+    RegConsoleCmdEx("sm_showac", SM_ShowAC, "Toggles anticheats being visible");
+    RegConsoleCmdEx("sm_showacs", SM_ShowAC, "Toggles anticheats being visible");
 	
 	// Command listeners for easier team joining
 	if(g_GameType == GameType_CSS)
@@ -566,6 +568,12 @@ public Action:Event_PlayerSpawn(Handle:event, const String:name[], bool:dontBroa
 	}
 	
 	return Plugin_Continue;
+}
+
+public Action:SM_ShowAC(client, args)
+{
+    g_Setup[client][ViewAnticheats] = !g_Setup[client][ViewAnticheats];
+    return Plugin_Handled;
 }
 
 public Action:SM_R(client, args)
