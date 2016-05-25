@@ -90,7 +90,6 @@ public Action:OnCvarChange(Handle:event, const String:name[], bool:dontbroadcast
 {
     new String:cvar_string[64];
     GetEventString(event, "cvarname", cvar_string, 64);
-    PrintToServer("%s %d", cvar_string, dontbroadcast);
     if(StrEqual(cvar_string, "sv_airaccelerate"))
         SetConVar("sv_airaccelerate", "1000");
     else if(StrEqual(cvar_string, "sv_enablebunnyhopping"))
