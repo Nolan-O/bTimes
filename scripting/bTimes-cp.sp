@@ -18,6 +18,8 @@ public Plugin:myinfo =
 #include <bTimes-zones>
 #include <smlib/entities>
 
+#define MAX_CP 20
+
 enum
 {
     GameType_CSS,
@@ -26,12 +28,12 @@ enum
 
 new    g_GameType;
 
-new     Float:g_cp[MAXPLAYERS+1][10][3][3];
+new     Float:g_cp[MAXPLAYERS+1][MAX_CP][3][3];
 new    g_cpcount[MAXPLAYERS+1];
 
 new    bool:g_UsePos[MAXPLAYERS+1] = {true, ...};
-new    bool:g_UseVel[MAXPLAYERS+1] = {false, ...};
-new    bool:g_UseAng[MAXPLAYERS+1] = {false, ...};
+new    bool:g_UseVel[MAXPLAYERS+1] = {true, ...};
+new    bool:g_UseAng[MAXPLAYERS+1] = {true, ...};
 
 new     g_LastUsed[MAXPLAYERS+1],
     bool:g_HasLastUsed[MAXPLAYERS+1];
@@ -551,7 +553,7 @@ SaveCheckpoint(client)
 {
     if(GetConVarBool(g_hAllowCp))
     {
-        if(g_cpcount[client] < 10)
+        if(g_cpcount[client] < MAX_CP)
         {
             Entity_GetAbsOrigin(client, g_cp[client][g_cpcount[client]][0]);
             Entity_GetAbsVelocity(client, g_cp[client][g_cpcount[client]][1]);
@@ -582,7 +584,7 @@ DeleteCheckpoint(client, cpnum)
 {
     if(0 <= cpnum <= g_cpcount[client])
     {
-        for(new i=cpnum+1; i<10; i++)
+        for(new i=cpnum+1; i<MAX_CP; i++)
             for(new i2=0; i2<3; i2++)
                 for(new i3=0; i3<3; i3++)
                     g_cp[client][i-1][i2][i3] = g_cp[client][i][i2][i3];
