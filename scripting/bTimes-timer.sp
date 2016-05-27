@@ -2489,7 +2489,7 @@ ReadStyleConfig()
                 g_StyleConfig[Key][GunJump]                = bool:KvGetNum(kv, "gunjump");
                 KvGetString(kv, "gunjump_weapon", g_StyleConfig[Key][GunJump_Weapon], 64);
                 g_StyleConfig[Key][UnrealPhys]             = bool:KvGetNum(kv, "unrealphys");
-                g_StyleConfig[Key][AirAcceleration]       = KvGetNum(kv, "aa", 100);
+                g_StyleConfig[Key][AirAcceleration]       = KvGetNum(kv, "aa", 1000);
                 g_StyleConfig[Key][EnableBunnyhopping]    = bool:KvGetNum(kv, "enablebhop", true);
                 
                 KvGoBack(kv);
