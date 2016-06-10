@@ -1726,7 +1726,7 @@ public Action:Timer_SpecList(Handle:timer, any:data)
             
             if(IsPlayerAlive(client))
             {
-                QueryClientConVar(client, "cl_radaralpha", OnRadarAlphaRetrieved);
+                ShowCornerTimes(client);
             }
             else
             {
@@ -1745,21 +1745,18 @@ public Action:Timer_SpecList(Handle:timer, any:data)
     }
 }
 
-public OnRadarAlphaRetrieved(QueryCookie:cookie, client, ConVarQueryResult:result, const String:cvarName[], const String:cvarValue[])
+public ShowCornerTimes(client)
 {    
-    if(StringToInt(cvarValue) == 0)
+    decl String:sMessage[128];
+    if(GetSyncHudMessage(client, sMessage, sizeof(sMessage)))
     {
-        decl String:sMessage[128];
-        if(GetSyncHudMessage(client, sMessage, sizeof(sMessage)))
+        new Handle:hText = CreateHudSynchronizer();
+        
+        if(hText != INVALID_HANDLE)
         {
-            new Handle:hText = CreateHudSynchronizer();
-            
-            if(hText != INVALID_HANDLE)
-            {
-                SetHudTextParams(0.01, 0.01, 1.0, 255, 255, 255, 255);
-                ShowSyncHudText(client, hText, sMessage);
-                CloseHandle(hText);
-            }
+            SetHudTextParams(0.01, 0.01, 1.0, 255, 255, 255, 255);
+            ShowSyncHudText(client, hText, sMessage);
+            CloseHandle(hText);
         }
     }
 }
