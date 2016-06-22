@@ -4074,23 +4074,34 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
         // Key restriction
         new bool:bRestrict;
         
-        if(g_StyleConfig[Style][Prevent_Left] && vel[1] < 0)
-            bRestrict = true;
-        if(g_StyleConfig[Style][Prevent_Right] && vel[1] > 0)
-            bRestrict = true;
-        if(g_StyleConfig[Style][Prevent_Back] && vel[0] < 0)
-            bRestrict = true;
-        if(g_StyleConfig[Style][Prevent_Forward] && vel[0] > 0)
-            bRestrict = true;
-        
-        if(g_StyleConfig[Style][Require_Left] && vel[1] >= 0)
-            bRestrict = true;
-        if(g_StyleConfig[Style][Require_Right] && vel[1] <= 0)
-            bRestrict = true;
-        if(g_StyleConfig[Style][Require_Back] && vel[0] >= 0)
-            bRestrict = true;
-        if(g_StyleConfig[Style][Require_Forward] && vel[0] <= 0)
-            bRestrict = true;
+        if(vel[1] > 0)
+        {
+            if(g_StyleConfig[Style][Prevent_Right])
+                bRestrict = true;
+            if(g_StyleConfig[Style][Require_Right])
+                bRestrict = true;
+        }
+        else if(vel[1] < 0)
+        {
+            if(g_StyleConfig[Style][Prevent_Left])
+                bRestrict = true;
+            if(g_StyleConfig[Style][Require_Left])
+                bRestrict = true;
+        }
+        if(vel[0] > 0)
+        {
+            if(g_StyleConfig[Style][Prevent_Forward] && vel[0] > 0)
+                bRestrict = true;
+            if(g_StyleConfig[Style][Require_Forward] && vel[0] <= 0)
+                bRestrict = true;
+        }
+        else if(vel[0] < 0)
+        {
+            if(g_StyleConfig[Style][Prevent_Back] && vel[0] < 0)
+                bRestrict = true;
+            if(g_StyleConfig[Style][Require_Back] && vel[0] >= 0)
+                bRestrict = true;
+        }
         
         if(g_StyleConfig[Style][Special])
         {
