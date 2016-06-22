@@ -4179,13 +4179,10 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                 if(buttons & (IN_LEFT|IN_RIGHT))
                 {
                     StopTimer(client);
-                    
-                    if(Timer_InsideZone(client, MAIN_START, -1) == -1 && Timer_InsideZone(client, BONUS_START, -1) == -1)
-                    {
-                        PrintColorText(client, "%s%sYour timer was stopped for using +left/+right",
-                            g_msg_start,
-                            g_msg_textcol);
-                    }
+
+                    PrintColorText(client, "%s%sYour timer was stopped for using +left/+right",
+                        g_msg_start,
+                        g_msg_textcol);
                 }
             }
             
