@@ -442,7 +442,7 @@ DB_Connect()
     if(g_DB != INVALID_HANDLE)
         CloseHandle(g_DB);
     
-    new String:error[255];
+    decl String:error[255];
     g_DB = SQL_Connect("timer", true, error, sizeof(error));
     
     if(g_DB == INVALID_HANDLE)

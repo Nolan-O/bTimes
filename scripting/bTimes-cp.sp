@@ -218,7 +218,7 @@ public Menu_Tpto(Handle:menu, MenuAction:action, client, param2)
 {
     if(action == MenuAction_Select)
     {
-        new String:info[32];
+        decl String:info[32];
         GetMenuItem(menu, param2, info, sizeof(info));
         
         new target = GetClientOfUserId(StringToInt(info));
@@ -368,7 +368,7 @@ public Menu_Checkpoint(Handle:menu, MenuAction:action, param1, param2)
 {
     if (action == MenuAction_Select)
     {
-        new String:info[32];
+        decl String:info[32];
         GetMenuItem(menu, param2, info, sizeof(info));
         
         if(StrEqual(info, "Save"))
@@ -433,7 +433,7 @@ public Menu_Teleport(Handle:menu, MenuAction:action, param1, param2)
 {
     if (action == MenuAction_Select)
     {
-        new String:info[32];
+        decl String:info[32];
         GetMenuItem(menu, param2, info, sizeof(info));
         
         if(StrEqual(info, "lastused"))

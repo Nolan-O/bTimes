@@ -179,7 +179,7 @@ public OnMapStart()
                 g_GhostPlayerID[Type][Style] = 0;
                 g_bGhostLoaded[Type][Style] = false;
                 
-                new String:sNameStart[64];
+                decl String:sNameStart[64];
                 if(Type == TIMER_MAIN)
                 {
                     GetStyleName(Style, sNameStart, sizeof(sNameStart));
@@ -613,7 +613,7 @@ public Action:GhostCheck(Handle:timer, any:data)
                                             decl String:sTime[32];
                                             FormatPlayerTime(time, sTime, sizeof(sTime), false, 0);
                                             
-                                            new String:sName[MAX_NAME_LENGTH];
+                                            decl String:sName[MAX_NAME_LENGTH];
                                             GetNameFromPlayerID(g_GhostPlayerID[Type][Style], sName, sizeof(sName));
                                             
                                             new Float:fVel = GetClientVelocity(g_Ghost[Type][Style], true, true, false);
@@ -710,7 +710,7 @@ LoadGhost()
                     new Handle:hFile = OpenFile(sPath, "r");
                     
                     // Load all data into the ghost handle
-                    new String:line[512], String:expLine[6][64], String:expLine2[2][10];
+                    decl String:line[512], String:expLine[6][64], String:expLine2[2][10];
                     new iSize = 0;
                     
                     ReadFileLine(hFile, line, sizeof(line));
@@ -909,7 +909,7 @@ DeleteGhost(Type, Style)
     {
         g_fGhostTime[Type][Style] = 0.0;
         ClearArray(g_hGhost[Type][Style]);
-        new String:sNameStart[64];
+        decl String:sNameStart[64];
         if(Type == TIMER_MAIN)
         {
             GetStyleName(Style, sNameStart, sizeof(sNameStart));

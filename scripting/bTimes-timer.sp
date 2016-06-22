@@ -912,7 +912,7 @@ AdminCmd_DeleteRecord(client, value1, value2)
     else
         SetMenuTitle(menu, "Delete records %d to %d", value1, value2);
     
-    new String:sDisplay[64], String:sInfo[32], String:sStyle[32], String:sType[32];
+    decl String:sDisplay[64], String:sInfo[32], String:sStyle[32], String:sType[32];
     
     for(new Type; Type < MAX_TYPES; Type++)
     {
@@ -1630,7 +1630,7 @@ GetTimerAdvancedString(client, String:sResult[], maxlength)
     }
     
     new Float:fTime = GetClientTimer(client);
-    new String:sTime[32];
+    decl String:sTime[32];
     FormatPlayerTime(fTime, sTime, sizeof(sTime), false, 0);
     Format(sResult, maxlength, "%sTime: %s (%d)\n", sResult, sTime, GetPlayerPosition(fTime, g_Type[client], Style));
     
@@ -1713,7 +1713,7 @@ public Action:Timer_SpecList(Handle:timer, any:data)
     new     SpecCount[MaxClients+1], AdminSpecCount[MaxClients+1];
     SpecCountToArrays(SpecCount, AdminSpecCount);
     
-    new String:message[256];
+    decl String:message[256];
     for(new client = 1; client <= MaxClients; client++)
     {
         if(IsClientInGame(client) && !IsFakeClient(client))
@@ -2253,7 +2253,7 @@ public Native_FinishTimer(Handle:plugin, numParams)
             StringToUpper(sStyle);
         }
         
-        new String:sTypeStyle[64];
+        decl String:sTypeStyle[64];
         if(strlen(sStyle) + strlen(sType) > 0)
             FormatEx(sTypeStyle, sizeof(sTypeStyle), "[%s%s] ", sType, sStyle);
         
@@ -2941,7 +2941,7 @@ public Native_GetTypeStyleFromCommand(Handle:plugin, numParams)
     decl String:sDelimiter[DelimiterLen + 1];
     GetNativeString(1, sDelimiter, DelimiterLen + 1);
     
-    new String:sTypeStyle[2][64];
+    decl String:sTypeStyle[2][64];
     ExplodeString(sCommand, sDelimiter, sTypeStyle, 2, 64);
     
     if(StrEqual(sTypeStyle[0], ""))
@@ -3712,7 +3712,7 @@ public DB_DeleteRecord_Callback1(Handle:owner, Handle:hndl, String:error[], any:
         SQL_FetchRow(hndl);
         new timesCount = SQL_FetchInt(hndl, 0);
         
-        new String:sInfo[32];
+        decl String:sInfo[32];
         if(Type == TIMER_BONUS)
         {
             GetTypeName(Type, sInfo, sizeof(sInfo), true);

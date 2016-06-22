@@ -1534,7 +1534,7 @@ LoadChatRanks()
     ClearArray(g_hChatRanksNames);
     
     // Read file lines and get chat ranks and ranges out of them
-    new String:line[PLATFORM_MAX_PATH], String:oldLine[PLATFORM_MAX_PATH], String:sRange[PLATFORM_MAX_PATH], String:sName[PLATFORM_MAX_PATH], String:expRange[2][128];
+    decl String:line[PLATFORM_MAX_PATH], String:oldLine[PLATFORM_MAX_PATH], String:sRange[PLATFORM_MAX_PATH], String:sName[PLATFORM_MAX_PATH], String:expRange[2][128];
     new idx, Range[2];
     
     new Handle:hFile = OpenFile(sPath, "r");
@@ -1871,10 +1871,10 @@ public DB_ShowMapsLeft_Callback(Handle:owner, Handle:hndl, String:error[], any:d
         if(client != 0)
         {
             new rows = SQL_GetRowCount(hndl), count;
-            new String:mapname[128];
+            decl String:mapname[128];
             new Handle:menu = CreateMenu(Menu_ShowMapsleft);
             
-            new String:sType[32];
+            decl String:sType[32];
             if(Type != ALL)
             {
                 GetTypeName(Type, sType, sizeof(sType));
@@ -1883,7 +1883,7 @@ public DB_ShowMapsLeft_Callback(Handle:owner, Handle:hndl, String:error[], any:d
                 AddSpaceToEnd(sType, sizeof(sType));
             }
             
-            new String:sStyle[32];
+            decl String:sStyle[32];
             if(Style != ALL)
             {
                 GetStyleName(Style, sStyle, sizeof(sStyle));
@@ -2031,7 +2031,7 @@ public Menu_ShowMapsdone_Callback(Handle:owner, Handle:hndl, String:error[], any
        
         new rows = SQL_GetRowCount(hndl);
         
-        new String:sType[32];
+        decl String:sType[32];
         if(Type != ALL)
         {
             GetTypeName(Type, sType, sizeof(sType));
@@ -2040,7 +2040,7 @@ public Menu_ShowMapsdone_Callback(Handle:owner, Handle:hndl, String:error[], any
             AddSpaceToEnd(sType, sizeof(sType));
         }
         
-        new String:sStyle[32];
+        decl String:sStyle[32];
         if(Style != ALL)
         {
             GetStyleName(Style, sStyle, sizeof(sStyle));
@@ -2537,7 +2537,8 @@ public LoadRankList_Callback(Handle:owner, Handle:hndl, const String:error[], an
             }
         }
         
-        new String:sName[MAX_NAME_LENGTH], PlayerID, Float:Points, Type, Style, iSize;
+        decl String:sName[MAX_NAME_LENGTH];
+        new PlayerID, Float:Points, Type, Style, iSize;
         
         while(SQL_FetchRow(hndl))
         {

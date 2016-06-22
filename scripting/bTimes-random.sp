@@ -910,7 +910,7 @@ GetKeysMessage(client, mouse, String:sKeys[], maxlen)
     new buttons = GetClientButtons(client);
     
     new String:sForward[1], String:sBack[1], String:sMoveleft[2], String:sMoveright[2];
-    new String:sTurnLeft[8], String:sTurnRight[8];
+    decl String:sTurnLeft[8], String:sTurnRight[8];
     
     if(buttons & IN_FORWARD)
         sForward[0] = 'W';
@@ -1187,7 +1187,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
     {
         if((GetConVarBool(g_hAllowKeysAlive) && IsPlayerAlive(client)) || !IsPlayerAlive(client))
         {
-            new String:keys[64];
+            decl String:keys[64];
             if(IsPlayerAlive(client))
             {
                 GetKeysMessage(client, mouse[0], keys, sizeof(keys));
