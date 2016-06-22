@@ -4213,7 +4213,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
         {
             if(g_StyleConfig[Style][Auto] || (g_StyleConfig[Style][Freestyle] && g_StyleConfig[Style][Freestyle_Auto] && Timer_InsideZone(client, FREESTYLE, 1 << Style) != -1))
             {
-                if((GetClientSettings(client) & AUTO_BHOP) && IsPlayerAlive(client))
+                if(GetClientSettings(client) & AUTO_BHOP)
                 {
                     if(buttons & IN_JUMP)
                     {
