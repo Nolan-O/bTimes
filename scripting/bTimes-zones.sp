@@ -2017,8 +2017,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                                         g_msg_start,
                                         g_msg_textcol);
                                 }
-                                
-                                if(IsBeingTimed(client, TIMER_BONUS) && g_Properties[Zone][Flags][ZoneNumber] & FLAG_ANTICHEAT_BONUS)
+                                else if(IsBeingTimed(client, TIMER_BONUS) && g_Properties[Zone][Flags][ZoneNumber] & FLAG_ANTICHEAT_BONUS)
                                 {
                                     StopTimer(client);
                                     

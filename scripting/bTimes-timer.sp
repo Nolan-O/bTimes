@@ -4139,12 +4139,11 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
             }
         }
         
-        if(g_StyleConfig[Style][Freestyle] && g_StyleConfig[Style][Freestyle_Unrestrict])
-            if(Timer_InsideZone(client, FREESTYLE, 1 << Style) != -1)
-                bRestrict = false;
-            
         if(GetEntityMoveType(client) == MOVETYPE_NOCLIP)
             bRestrict = false;
+        else if(g_StyleConfig[Style][Freestyle] && g_StyleConfig[Style][Freestyle_Unrestrict])
+            if(Timer_InsideZone(client, FREESTYLE, 1 << Style) != -1)
+                bRestrict = false;
         
         if(bRestrict == true)
         {
