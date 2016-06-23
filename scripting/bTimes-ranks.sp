@@ -1467,7 +1467,7 @@ public Action:SM_Rankings(client, args)
     
     decl String:sChatRank[MAXLENGTH_NAME];
     
-    for(new i=0; i<iSize-1; i++)
+    for(new i=0; i<iSize; i++)
     {
         GetArrayString(g_hChatRanksNames, i, sChatRank, MAXLENGTH_NAME);
         FormatTag(client, sChatRank, MAXLENGTH_NAME);
