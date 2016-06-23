@@ -129,8 +129,7 @@ new    Handle:g_fwdOnTimerFinished_Pre,
     Handle:g_fwdOnTimesLoaded,
     Handle:g_fwdOnStyleChanged;
     
-new Handle:g_ConVar_AirAccelerate,
-    Handle:g_ConVar_EnableBunnyhopping;
+new Handle:g_ConVar_AirAccelerate;
     
 // Admin
 new    bool:g_bIsAdmin[MAXPLAYERS + 1];
@@ -240,17 +239,6 @@ public OnPluginStart()
     
     SetConVarFlags( g_ConVar_AirAccelerate, flags );
     
-    g_ConVar_EnableBunnyhopping = FindConVar( "sv_enablebunnyhopping" );
-    
-    if ( g_ConVar_EnableBunnyhopping == INVALID_HANDLE )
-        SetFailState( "Unable to find cvar handle for sv_enablebunnyhopping!" );
-    
-    flags = GetConVarFlags( g_ConVar_EnableBunnyhopping );
-    
-    flags &= ~FCVAR_NOTIFY;
-    flags &= ~FCVAR_REPLICATED;
-    
-    SetConVarFlags( g_ConVar_EnableBunnyhopping, flags );
 }
 
 public OnAllPluginsLoaded()
@@ -468,7 +456,6 @@ public Hook_PreThink(client)
     if(!IsFakeClient(client))
     {
         SetConVarInt(g_ConVar_AirAccelerate, g_StyleConfig[g_Style[client][g_Type[client]]][AirAcceleration]);
-        SetConVarBool(g_ConVar_EnableBunnyhopping, g_StyleConfig[g_Style[client][g_Type[client]]][EnableBunnyhopping]);
     }
 }
 
@@ -2487,7 +2474,6 @@ ReadStyleConfig()
                 KvGetString(kv, "gunjump_weapon", g_StyleConfig[Key][GunJump_Weapon], 64);
                 g_StyleConfig[Key][UnrealPhys]             = bool:KvGetNum(kv, "unrealphys");
                 g_StyleConfig[Key][AirAcceleration]       = KvGetNum(kv, "aa", 1000);
-                g_StyleConfig[Key][EnableBunnyhopping]    = bool:KvGetNum(kv, "enablebhop", true);
                 
                 KvGoBack(kv);
                 Key++;
