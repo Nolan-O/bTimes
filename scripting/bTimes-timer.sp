@@ -4049,6 +4049,28 @@ CheckSync(client, buttons, Float:vel[3], Float:angles[3])
     g_fOldAngle[client] = angles[1];
 }
 
+bool:CheckRestrict(Float:vel[3], Style)
+{
+    if(g_StyleConfig[Style][Prevent_Left] && vel[1] < 0)
+        return true;
+    if(g_StyleConfig[Style][Prevent_Right] && vel[1] > 0)
+        return true;
+    if(g_StyleConfig[Style][Prevent_Back] && vel[0] < 0)
+        return true;
+    if(g_StyleConfig[Style][Prevent_Forward] && vel[0] > 0)
+        return true;
+
+    if(g_StyleConfig[Style][Require_Left] && vel[1] >= 0)
+        return true;
+    if(g_StyleConfig[Style][Require_Right] && vel[1] <= 0)
+        return true;
+    if(g_StyleConfig[Style][Require_Back] && vel[0] >= 0)
+        return true;
+    if(g_StyleConfig[Style][Require_Forward] && vel[0] <= 0)
+        return true;
+    return false;
+}
+
 public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:angles[3], &weapon)
 {
     g_UnaffectedButtons[client] = buttons;
@@ -4058,36 +4080,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
         new Style = g_Style[client][g_Type[client]];
         
         // Key restriction
-        new bool:bRestrict;
-        
-        if(vel[1] > 0)
-        {
-            if(g_StyleConfig[Style][Prevent_Right])
-                bRestrict = true;
-            if(g_StyleConfig[Style][Require_Right])
-                bRestrict = true;
-        }
-        else if(vel[1] < 0)
-        {
-            if(g_StyleConfig[Style][Prevent_Left])
-                bRestrict = true;
-            if(g_StyleConfig[Style][Require_Left])
-                bRestrict = true;
-        }
-        if(vel[0] > 0)
-        {
-            if(g_StyleConfig[Style][Prevent_Forward] && vel[0] > 0)
-                bRestrict = true;
-            if(g_StyleConfig[Style][Require_Forward] && vel[0] <= 0)
-                bRestrict = true;
-        }
-        else if(vel[0] < 0)
-        {
-            if(g_StyleConfig[Style][Prevent_Back] && vel[0] < 0)
-                bRestrict = true;
-            if(g_StyleConfig[Style][Require_Back] && vel[0] >= 0)
-                bRestrict = true;
-        }
+        new bool:bRestrict = CheckRestrict(vel, Style);
         
         if(g_StyleConfig[Style][Special])
         {
