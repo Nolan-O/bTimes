@@ -2259,7 +2259,7 @@ public Native_FinishTimer(Handle:plugin, numParams)
             StringToUpper(sStyle);
         }
         
-        decl String:sTypeStyle[64];
+        new String:sTypeStyle[64];
         if(strlen(sStyle) + strlen(sType) > 0)
             FormatEx(sTypeStyle, sizeof(sTypeStyle), "[%s%s] ", sType, sStyle);
         
