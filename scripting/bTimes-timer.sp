@@ -668,13 +668,13 @@ public Action:Timer_CheckVel(Handle:timer, any:client)
 
 public Action:SM_B_(client, args)
 {
-    SetStyle(client, TIMER_BONUS, 0);
+    SetStyle(client, TIMER_BONUS, GetStyle(client));
     return Plugin_Handled;
 }
 
 public Action:SM_R_(client, args)
 {
-    SetStyle(client, TIMER_MAIN, 0);
+    SetStyle(client, TIMER_MAIN, GetStyle(client));
     return Plugin_Handled;
 }
 
