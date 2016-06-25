@@ -208,6 +208,13 @@ public OnPluginStart()
     RegConsoleCmdEx("sm_fps", SM_Fps, "Shows a list of every player's fps_max value.");
     RegConsoleCmdEx("sm_auto", SM_Auto, "Toggles auto bunnyhop");
     RegConsoleCmdEx("sm_bhop", SM_Auto, "Toggles auto bunnyhop");
+    RegConsoleCmdEx("sm_b", SM_B_, "");
+    RegConsoleCmdEx("sm_bonus", SM_B_, "");
+    RegConsoleCmdEx("sm_br", SM_B_, "");
+    RegConsoleCmdEx("sm_r", SM_R_, "");
+    RegConsoleCmdEx("sm_restart", SM_R_, "");
+    RegConsoleCmdEx("sm_respawn", SM_R_, "");
+    RegConsoleCmdEx("sm_start", SM_R_, "");
     
     // Makes FindTarget() work properly
     LoadTranslations("common.phrases");
@@ -657,6 +664,18 @@ public Action:Timer_CheckVel(Handle:timer, any:client)
         
         TeleportEntity(client, NULL_VECTOR, NULL_VECTOR, vVel);
     }
+}
+
+public Action:SM_B_(client, args)
+{
+    SetStyle(client, TIMER_BONUS, 0);
+    return Plugin_Handled;
+}
+
+public Action:SM_R_(client, args)
+{
+    SetStyle(client, TIMER_MAIN, 0);
+    return Plugin_Handled;
 }
 
 // Auto bhop
@@ -1161,7 +1180,7 @@ SetStyle(client, Type, Style)
     new OldStyle = g_Style[client][Type];
     
     g_Style[client][Type] = Style;
-    
+    g_Type[client] = Type;
     StopTimer(client);
     
     if(Type == TIMER_MAIN)
