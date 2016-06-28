@@ -983,15 +983,12 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                         {
                             g_fStartTime[Type][Style] = GetEngineTime();
                             
-                            if(iSize > 0)
-                            {
-                                vPos[0] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 0);
-                                vPos[1] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 1);
-                                vPos[2] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 2);
-                                vAng[0] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 3);
-                                vAng[1] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 4);
-                                TeleportEntity(g_Ghost[Type][Style], vPos, vAng, Float:{0.0, 0.0, 0.0});
-                            }
+                            vPos[0] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 0);
+                            vPos[1] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 1);
+                            vPos[2] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 2);
+                            vAng[0] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 3);
+                            vAng[1] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 4);
+                            TeleportEntity(g_Ghost[Type][Style], vPos, vAng, Float:{0.0, 0.0, 0.0});
                             
                             if(g_GhostPaused[Type][Style] == false)
                             {
@@ -1007,16 +1004,13 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                         }
                         else if(g_GhostFrame[Type][Style] == (iSize - 1))
                         {
-                            if(iSize > 0)
-                            {
-                                vPos[0] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 0);
-                                vPos[1] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 1);
-                                vPos[2] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 2);
-                                vAng[0] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 3);
-                                vAng[1] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 4);
-                                
-                                TeleportEntity(g_Ghost[Type][Style], vPos, vAng, Float:{0.0, 0.0, 0.0});
-                            }
+                            vPos[0] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 0);
+                            vPos[1] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 1);
+                            vPos[2] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 2);
+                            vAng[0] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 3);
+                            vAng[1] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 4);
+                            
+                            TeleportEntity(g_Ghost[Type][Style], vPos, vAng, Float:{0.0, 0.0, 0.0});
                             
                             if(g_GhostPaused[Type][Style] == false)
                             {                    
@@ -1027,10 +1021,10 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                             if(GetEngineTime() > g_fPauseTime[Type][Style] + GetConVarFloat(g_hGhostEndPauseTime))
                             {
                                 g_GhostPaused[Type][Style] = false;
-                                g_GhostFrame[Type][Style]  = (g_GhostFrame[Type][Style] + 1) % iSize;
+                                g_GhostFrame[Type][Style] = 0;
                             }
                         }
-                        else if(g_GhostFrame[Type][Style] < iSize)
+                        else
                         {
                             new Float:vPos2[3];
                             Entity_GetAbsOrigin(client, vPos2);
@@ -1042,26 +1036,19 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                             vAng[1] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 4);
                             buttons = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 5);
                             
-                            if(GetVectorDistance(vPos, vPos2) > 50.0)
-                            {
-                                TeleportEntity(g_Ghost[Type][Style], vPos, vAng, NULL_VECTOR);
-                            }
-                            else
-                            {
-                                // Get the new velocity from the the 2 points
-                                new Float:vVel[3];
-                                MakeVectorFromPoints(vPos2, vPos, vVel);
-                                ScaleVector(vVel, 100.0);
-                                
-                                TeleportEntity(g_Ghost[Type][Style], NULL_VECTOR, vAng, vVel);
-                            }
+                            // Get the new velocity from the the 2 points
+                            new Float:vVel[3];
+                            MakeVectorFromPoints(vPos2, vPos, vVel);
+                            ScaleVector(vVel, 100.0);
+                            
+                            TeleportEntity(g_Ghost[Type][Style], NULL_VECTOR, vAng, vVel);
                             
                             if(GetEntityFlags(g_Ghost[Type][Style]) & FL_ONGROUND)
                                 SetEntityMoveType(g_Ghost[Type][Style], MOVETYPE_WALK);
                             else
                                 SetEntityMoveType(g_Ghost[Type][Style], MOVETYPE_NOCLIP);
                             
-                            g_GhostFrame[Type][Style] = (g_GhostFrame[Type][Style] + 1) % iSize;
+                            g_GhostFrame[Type][Style]++;
                         }
                         
                         if(g_GhostPaused[Type][Style] == true)
