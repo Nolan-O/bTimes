@@ -58,6 +58,8 @@ new    Handle:g_hGhostClanTag[MAX_TYPES][MAX_STYLES],
     
 // Weapon control
 new    bool:g_bNewWeapon;
+
+new Handle:g_hBotQuota;
     
 public OnPluginStart()
 {    
@@ -78,6 +80,7 @@ public OnPluginStart()
     
     g_hGhostStartPauseTime = CreateConVar("timer_ghoststartpause", "5.0", "How long the ghost will pause before starting its run.");
     g_hGhostEndPauseTime   = CreateConVar("timer_ghostendpause", "2.0", "How long the ghost will pause after it finishes its run.");
+    g_hBotQuota = FindConVar("bot_quota");
     
     AutoExecConfig(true, "ghost", "timer");
     
@@ -509,13 +512,10 @@ AssignToReplay(client)
 
 public Action:GhostCheck(Handle:timer, any:data)
 {
-    new Handle:hBotQuota = FindConVar("bot_quota");
-    new iBotQuota = GetConVarInt(hBotQuota);
+    new iBotQuota = GetConVarInt(g_hBotQuota);
     
     if(iBotQuota != g_iBotQuota)
         ServerCommand("bot_quota %d", g_iBotQuota);
-    
-    CloseHandle(hBotQuota);
     
     for(new client = 1; client <= MaxClients; client++)
     {
