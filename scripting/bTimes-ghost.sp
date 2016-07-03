@@ -413,10 +413,13 @@ CheckWeapons(Type, Style)
         FakeClientCommand(g_Ghost[Type][Style], "drop");
         
         decl String:sWeapon[32];
-        GetConVarString(g_hGhostWeapon[Type][Style], sWeapon, sizeof(sWeapon));
+        if(g_hGhostWeapon[Type][Style] != INVALID_HANDLE)
+        {
+            GetConVarString(g_hGhostWeapon[Type][Style], sWeapon, sizeof(sWeapon));
         
-        g_bNewWeapon = true;
-        GivePlayerItem(g_Ghost[Type][Style], sWeapon);
+            g_bNewWeapon = true;
+            GivePlayerItem(g_Ghost[Type][Style], sWeapon);
+        }
     }
 }
 
@@ -979,7 +982,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                         new iSize = GetArraySize(g_hGhost[Type][Style]);
                         
                         new Float:vPos[3], Float:vAng[3];
-                        if(g_GhostFrame[Type][Style] == 0)
+                        if(g_GhostFrame[Type][Style] == 1)
                         {
                             g_fStartTime[Type][Style] = GetEngineTime();
                             
@@ -1021,10 +1024,10 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                             if(GetEngineTime() > g_fPauseTime[Type][Style] + GetConVarFloat(g_hGhostEndPauseTime))
                             {
                                 g_GhostPaused[Type][Style] = false;
-                                g_GhostFrame[Type][Style] = 0;
+                                g_GhostFrame[Type][Style] = 1;
                             }
                         }
-                        else
+                        else if(g_GhostFrame[Type][Style] > 0)
                         {
                             new Float:vPos2[3];
                             Entity_GetAbsOrigin(client, vPos2);
@@ -1050,6 +1053,9 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                             
                             g_GhostFrame[Type][Style]++;
                         }
+                        //This should only run the first time a ghost is loaded per map
+                        else if(g_GhostFrame[Type][Style] == 0 && iSize > 0)
+                            g_GhostFrame[Type][Style]++;
                         
                         if(g_GhostPaused[Type][Style] == true)
                         {
