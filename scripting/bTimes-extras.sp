@@ -1,5 +1,6 @@
 #include <sourcemod>
 #include <sdktools>
+#include <smlib/clients>
 
 public Plugin:myinfo = {
     name = "[bTimes] Extras",
@@ -7,6 +8,13 @@ public Plugin:myinfo = {
     author = "",
     version = "1.0",
     url = ""
+}
+
+new bool:g_bCanReceiveWeapons[MAXPLAYERS] = {true, ...};
+
+public OnClientDisconnect(client)
+{
+    g_bCanReceiveWeapons[client] = true;
 }
 
 public void:SetConVar(String:cvar1[], String:n_val[])
@@ -33,12 +41,47 @@ public OnPluginStart()
     RegConsoleCmd("sm_knife", GiveKnife, "Gives player knife");
     RegConsoleCmd("sm_nightvision", GiveNvgs, "Gives player night vision goggles");
     RegConsoleCmd("sm_nvgs", GiveNvgs, "Gives player night vision goggles");
+    RegAdminCmd("sm_stripweps", StripWeapons, ADMFLAG_GENERIC, "Strips a player's weapons and blocks them from weapon commands");
+    RegAdminCmd("sm_stripweapons", StripWeapons, ADMFLAG_GENERIC, "Strips a player's weapons and blocks them from weapon commands");
+}
+
+public Action:StripWeapons(client, args)
+{
+    decl String:arg1[32];
+    GetCmdArg(1, arg1, sizeof(arg1));
+    //Yes you can use this on bots
+    new target = Client_FindByName(arg1);
+    if(target == -1)
+    {
+        PrintToChat(client, "Could not find that player");
+        return Plugin_Handled;
+    }
+    if(g_bCanReceiveWeapons[target])
+    {
+        g_bCanReceiveWeapons[target] = false;
+        if(IsPlayerAlive(target)){
+            new e_wep = GetPlayerWeaponSlot(target, 1);
+            if(e_wep != -1){
+                RemovePlayerItem(target, e_wep);
+                AcceptEntityInput(e_wep, "Kill");
+            }
+        }
+        PrintToChat(client, "Player '%N' can no longer use weapon commands", target);
+        PrintToChat(target, "An admin has stripped your ability to use weapon commands!");
+    }
+    else
+    {
+        g_bCanReceiveWeapons[target] = true;
+        PrintToChat(client, "Player '%N' can now use weapons commands again", target);
+        PrintToChat(target, "Weapon command access has been restored.");
+    }
+    return Plugin_Handled;
 }
 
 public Action:GiveGlock(client, args)
 {
     //I get the feeling we shouldn't put this in a function for some reason
-    if(IsPlayerAlive(client)){
+    if(IsPlayerAlive(client) && g_bCanReceiveWeapons[client]){
         new e_wep = GetPlayerWeaponSlot(client, 1);
         if(e_wep != -1){
             RemovePlayerItem(client, e_wep);
@@ -51,7 +94,7 @@ public Action:GiveGlock(client, args)
 
 public Action:GiveUsp(client, args)
 {
-    if(IsPlayerAlive(client)){
+    if(IsPlayerAlive(client) && g_bCanReceiveWeapons[client]){
         new e_wep = GetPlayerWeaponSlot(client, 1);
         if(e_wep != -1){
             RemovePlayerItem(client, e_wep);
@@ -64,7 +107,7 @@ public Action:GiveUsp(client, args)
 
 public Action:GiveKnife(client, args)
 {
-    if(IsPlayerAlive(client)){
+    if(IsPlayerAlive(client) && g_bCanReceiveWeapons[client]){
         new e_wep = GetPlayerWeaponSlot(client, 1);
         if(e_wep != -1){
             RemovePlayerItem(client, e_wep);
