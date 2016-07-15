@@ -162,8 +162,8 @@ public OnPluginStart()
     g_hAllowNoClip     = CreateConVar("timer_noclip", "1", "Allows players to use the !p commands to noclip themselves.", 0, true, 0.0, true, 1.0);
     g_hVelocityCap     = CreateConVar("timer_velocitycap", "1", "Allows styles with a max velocity cap to cap player velocity.", 0, true, 0.0, true, 1.0);
     g_hJumpInStartZone = CreateConVar("timer_allowjumpinstart", "1", "Allows players to jump in the start zone. (This is not exactly anti-prespeed)", 0, true, 0.0, true, 1.0);
-    g_hAllowAuto       = CreateConVar("timer_allowauto", "1", "Allows players to use auto bunnyhop.", 0, true, 0.0, true, 1.0);
-    g_hAutoStopsTimer  = CreateConVar("timer_autostopstimer", "0", "Players can't get times with autohop on.");
+    g_hAllowAuto       = CreateConVar("timer_allowauto", "0", "Allows players to use auto bunnyhop.", 0, true, 0.0, true, 1.0);
+    g_hAutoStopsTimer  = CreateConVar("timer_autostopstimer", "1", "Players can't get times with autohop on.");
     
     HookConVarChange(g_hHintSpeed, OnTimerHintSpeedChanged);
     HookConVarChange(g_hChangeClanTag, OnChangeClanTagChanged);
@@ -4211,30 +4211,6 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
             }
             
             g_fCurrentTime[client] += GetTickInterval();
-        }
-        
-        // auto bhop check
-        if(g_bAllowAuto)
-        {
-            if(g_StyleConfig[Style][Auto] || (g_StyleConfig[Style][Freestyle] && g_StyleConfig[Style][Freestyle_Auto] && Timer_InsideZone(client, FREESTYLE, 1 << Style) != -1))
-            {
-                if(GetClientSettings(client) & AUTO_BHOP)
-                {
-                    if(buttons & IN_JUMP)
-                    {
-                        if(!(GetEntityFlags(client) & FL_ONGROUND))
-                        {
-                            if(!(GetEntityMoveType(client) & MOVETYPE_LADDER))
-                            {
-                                if(GetEntProp(client, Prop_Data, "m_nWaterLevel") <= 1)
-                                {
-                                    buttons &= ~IN_JUMP;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
         
         if(g_bJumpInStartZone == false)
