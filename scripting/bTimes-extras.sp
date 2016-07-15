@@ -282,7 +282,7 @@ public Action:OnCvarChange(Handle:event, const String:name[], bool:dontbroadcast
     decl String:cvar_string[64];
     GetEventString(event, "cvarname", cvar_string, 64);
     if(StrEqual(cvar_string, "sv_airaccelerate"))
-        SetConVar("sv_airaccelerate", "1000");
+        SetConVar("sv_airaccelerate", "100");
     else if(StrEqual(cvar_string, "sv_enablebunnyhopping"))
         SetConVar("sv_enablebunnyhopping", "1");
     else if(StrEqual(cvar_string, "sv_maxvelocity"))
