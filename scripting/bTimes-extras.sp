@@ -45,7 +45,7 @@ GiveWeapon(client, String:wep[])
 public OnPluginStart()
 {
     SetConVar("sv_enablebunnyhopping", "1");
-    SetConVar("sv_airaccelerate", "1000");
+    SetConVar("sv_airaccelerate", "100");
     SetConVar("sv_maxvelocity", "100000");
     SetConVar("sv_friction", "4");
     SetConVar("sv_accelerate", "5");
@@ -78,15 +78,8 @@ public OnPluginStart()
     RegConsoleCmd("sm_ump45", GiveUMP45, "Gives player ump45");
     RegConsoleCmd("sm_p90", GiveP90, "Gives player p90");
     RegConsoleCmd("sm_m249", GiveM249, "Gives player m249");
-    RegConsoleCmd("sm_scout", GiveScout, "Gives player m249");
     RegAdminCmd("sm_stripweps", StripWeapons, ADMFLAG_GENERIC, "Strips a player's weapons and blocks them from weapon commands");
     RegAdminCmd("sm_stripweapons", StripWeapons, ADMFLAG_GENERIC, "Strips a player's weapons and blocks them from weapon commands");
-}
-
-public Action:GiveScout(client, args)
-{
-    GiveWeapon(client, "weapon_scout");
-    return Plugin_Handled;
 }
 
 public Action:GiveM249(client, args)
