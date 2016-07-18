@@ -2149,16 +2149,17 @@ public OnTimesUpdated(const String:sMapName[], Type, Style, Handle:Times)
     
     new Float:fAverage = fTimeSum / float(Size);
     
-    new QuerySize = 200 + (50 * Size);
-    decl String:query[QuerySize];
-    FormatEx(query, QuerySize, "UPDATE times SET Points = CASE PlayerID ");
+	// Update points for all players
+	new QuerySize = 250;
+	for(new idx; idx < Size; idx++)
+	{
+		decl String:query[QuerySize];
+		new Float:fPoints = (float(Size) - float(idx)) * fAverage / 10.0;
+		FormatEx(query, QuerySize, "UPDATE times SET Points = %f ", fPoints);
+		Format(query, QuerySize, "%s WHERE MapID = (SELECT MapID FROM maps WHERE MapName='%s') AND Type=%d AND Style=%d AND PlayerID=%d", query, sMapName, Type, Style, GetArrayCell(Times, idx));
     
-    for(new idx; idx < Size; idx++)
-        Format(query, QuerySize, "%sWHEN %d THEN %f ", query, GetArrayCell(Times, idx), (float(Size) - float(idx)) * fAverage / 10.0);
-    
-    Format(query, QuerySize, "%sEND WHERE MapID = (SELECT MapID FROM maps WHERE MapName='%s') AND Type=%d AND Style=%d", query, sMapName, Type, Style);
-    
-    SQL_TQuery(g_DB, TimesUpdated_Callback, query);
+		SQL_TQuery(g_DB, TimesUpdated_Callback, query);
+	}
 }
 
 public TimesUpdated_Callback(Handle:owner, Handle:hndl, String:error[], any:data)
