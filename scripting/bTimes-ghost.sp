@@ -44,6 +44,7 @@ new     Handle:g_hGhost[MAX_TYPES][MAX_STYLES],
     Float:g_fGhostTime[MAX_TYPES][MAX_STYLES],
     Float:g_fPauseTime[MAX_TYPES][MAX_STYLES],
     g_iBotQuota,
+    g_iGhostSize[MAX_TYPES][MAX_STYLES],
     bool:g_bGhostLoadedOnce[MAX_TYPES][MAX_STYLES],
     bool:g_bGhostLoaded[MAX_TYPES][MAX_STYLES],
     bool:g_bReplayFileExists[MAX_TYPES][MAX_STYLES];
@@ -760,6 +761,7 @@ LoadGhost()
                     g_bGhostLoaded[Type][Style] = true;
                 }
             }
+            g_iGhostSize[Type][Style] = GetArraySize(g_hGhost[Type][Style]);
         }
     }
 }
@@ -872,6 +874,7 @@ SaveGhost(client, Float:Time, Type, Style)
     }
     CloseHandle(hFile);
     
+    g_iGhostSize[Type][Style] = GetArraySize(g_hGhost[Type][Style]);
     g_GhostFrame[Type][Style] = 0;
     
     decl String:sNameStart[MAX_NAME_LENGTH], String:sTime[32];
@@ -979,8 +982,6 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                 {
                     if(client == g_Ghost[Type][Style] && g_hGhost[Type][Style] != INVALID_HANDLE)
                     {
-                        new iSize = GetArraySize(g_hGhost[Type][Style]);
-                        
                         new Float:vPos[3], Float:vAng[3];
                         if(g_GhostFrame[Type][Style] == 1)
                         {
@@ -1005,7 +1006,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                                 g_GhostFrame[Type][Style]++;
                             }
                         }
-                        else if(g_GhostFrame[Type][Style] == (iSize - 1))
+                        else if(g_GhostFrame[Type][Style] == (g_iGhostSize[Type][Style] - 1))
                         {
                             vPos[0] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 0);
                             vPos[1] = GetArrayCell(g_hGhost[Type][Style], g_GhostFrame[Type][Style], 1);
@@ -1054,7 +1055,7 @@ public Action:OnPlayerRunCmd(client, &buttons, &impulse, Float:vel[3], Float:ang
                             g_GhostFrame[Type][Style]++;
                         }
                         //This should only run the first time a ghost is loaded per map
-                        else if(g_GhostFrame[Type][Style] == 0 && iSize > 0)
+                        else if(g_GhostFrame[Type][Style] == 0 && g_iGhostSize[Type][Style] > 0)
                             g_GhostFrame[Type][Style]++;
                         
                         if(g_GhostPaused[Type][Style] == true)
