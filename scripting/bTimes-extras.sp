@@ -228,6 +228,11 @@ public Action:StripWeapons(client, args)
                 RemovePlayerItem(target, e_wep);
                 AcceptEntityInput(e_wep, "Kill");
             }
+            e_wep = GetPlayerWeaponSlot(target, 0);
+            if(e_wep != -1){
+                RemovePlayerItem(target, e_wep);
+                AcceptEntityInput(e_wep, "Kill");
+            }
         }
         PrintToChat(client, "Player '%N' can no longer use weapon commands", target);
         PrintToChat(target, "An admin has stripped your ability to use weapon commands!");
