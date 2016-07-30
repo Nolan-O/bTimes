@@ -1,0 +1,37 @@
+"Sounds"
+{
+	"World Record"
+	{
+		"1"
+		{
+			"Position" "1"
+			"Sound"    "example1.mp3"
+		}
+		"2"
+		{
+			"Position" "2"
+			"Sound"    "example2"
+		}
+		"3"
+		{
+			"Position" "3"
+			"Sound"    "example3.mp3"
+		}
+	}
+	
+	"Personal Record"
+	{
+		"1"
+		{
+			"Sound"    "example4.mp3"
+		}
+	}
+	
+	"No New Time"
+	{
+		"1"
+		{
+			"Sound"    "example5.mp3"
+		}
+	}
+}
