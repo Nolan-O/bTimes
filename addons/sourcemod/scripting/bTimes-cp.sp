@@ -440,8 +440,8 @@ public Menu_Settings(Handle:menu, MenuAction:action, param1, param2)
         {
             OpenCheckpointMenu(param1);
         }
-        }
-        else if (action == MenuAction_Cancel)
+    }
+    else if (action == MenuAction_Cancel)
     {
         if (param2 == MenuCancel_ExitBack)
         {
@@ -454,24 +454,24 @@ public Menu_Settings(Handle:menu, MenuAction:action, param1, param2)
 
 OpenDeleteRangeMenu(client)
 {
-    if(g_cpcount[client] >= 2)
+    if (g_cpcount[client] >= 2)
     {
-    new Handle:menu = CreateMenu(Menu_DeleteRange1);
-    SetMenuTitle(menu, "First CP Selection");
-    AddMenuItem(menu, "add1", "Add 1");
-    AddMenuItem(menu, "add10", "Add 10");
-    AddMenuItem(menu, "remove1", "Remove 1");
-    AddMenuItem(menu, "remove10", "Remove 10");
-    AddMenuItem(menu, "confirm", "Confirm");
-    
-    SetMenuExitBackButton(menu, true);
-    SetMenuExitButton(menu, true);
-    DisplayMenu(menu, client, MENU_TIME_FOREVER);
+        new Handle:menu = CreateMenu(Menu_DeleteRange1);
+        SetMenuTitle(menu, "First CP Selection");
+        AddMenuItem(menu, "add1", "Add 1");
+        AddMenuItem(menu, "add10", "Add 10");
+        AddMenuItem(menu, "remove1", "Remove 1");
+        AddMenuItem(menu, "remove10", "Remove 10");
+        AddMenuItem(menu, "confirm", "Confirm");
+        
+        SetMenuExitBackButton(menu, true);
+        SetMenuExitButton(menu, true);
+        DisplayMenu(menu, client, MENU_TIME_FOREVER);
     }
     else
     {
-        PrintColorText(client, "%s%sNo available CPs or only 1 CP not allowing a range.",
-            g_msg_start,
+        PrintColorText(client, "%s%sNo available CPs or only 1 CP not allowing a range.", 
+            g_msg_start, 
             g_msg_textcol);
         OpenCheckpointMenu(client);
     }
@@ -479,103 +479,103 @@ OpenDeleteRangeMenu(client)
 
 public Menu_DeleteRange1(Handle:menu, MenuAction:action, param1, param2)
 {
-    if(action == MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         decl String:info[32];
-        GetMenuItem(menu, param2, info, sizeof(info));    
+        GetMenuItem(menu, param2, info, sizeof(info));
         if (StrEqual(info, "add1"))
         {
-            if(g_range_one[param1] == g_cpcount[param1] - 1)
+            if (g_range_one[param1] == g_cpcount[param1] - 1)
             {
-            PrintColorText(param1, "%s%sCannot have CP1 equal to highest CP.", 
-            g_msg_start, 
-            g_msg_textcol);
-            OpenDeleteRangeMenu(param1);
-        } 
-        else 
-        {
-            g_range_one[param1]++;
-            PrintColorText(param1, "%s%sCP1: %s%d",
-            g_msg_start,
-            g_msg_textcol,
-            g_msg_varcol,
-            g_range_one[param1]);
-            OpenDeleteRangeMenu(param1);
-        }
+                PrintColorText(param1, "%s%sCannot have CP1 equal to highest CP.", 
+                    g_msg_start, 
+                    g_msg_textcol);
+                OpenDeleteRangeMenu(param1);
+            }
+            else
+            {
+                g_range_one[param1]++;
+                PrintColorText(param1, "%s%sCP1: %s%d", 
+                    g_msg_start, 
+                    g_msg_textcol, 
+                    g_msg_varcol, 
+                    g_range_one[param1]);
+                OpenDeleteRangeMenu(param1);
+            }
         }
         if (StrEqual(info, "add10"))
         {
-            if(g_range_one[param1] <= g_cpcount[param1] - 1 && g_range_one[param1] >= g_cpcount[param1] - 10)
+            if (g_range_one[param1] <= g_cpcount[param1] - 1 && g_range_one[param1] >= g_cpcount[param1] - 10)
             {
                 PrintColorText(param1, "%s%sCannot have CP1 equal to highest CP.", 
-                g_msg_start, 
-                g_msg_textcol);
+                    g_msg_start, 
+                    g_msg_textcol);
                 OpenDeleteRangeMenu(param1);
             }
             else
             {
                 g_range_one[param1] += 10;
-                PrintColorText(param1, "%s%sCP1: %s%d",
-                g_msg_start,
-                g_msg_textcol,
-                g_msg_varcol,
-                g_range_one[param1]);
+                PrintColorText(param1, "%s%sCP1: %s%d", 
+                    g_msg_start, 
+                    g_msg_textcol, 
+                    g_msg_varcol, 
+                    g_range_one[param1]);
                 OpenDeleteRangeMenu(param1);
             }
         }
         if (StrEqual(info, "remove1"))
         {
-            if(g_range_one[param1] == 1)
+            if (g_range_one[param1] == 1)
             {
                 PrintColorText(param1, "%s%sTrying to delete lower than 1 CP.", 
-                g_msg_start, 
-                g_msg_textcol);
+                    g_msg_start, 
+                    g_msg_textcol);
                 OpenDeleteRangeMenu(param1);
             }
-            else if(g_range_one[param1] == 0)
+            else if (g_range_one[param1] == 0)
             {
-                   PrintColorText(param1, "%s%sCannot specify negative CPs.",
-                   g_msg_start,
-                   g_msg_textcol);
-                   OpenDeleteRangeMenu(param1);
-               }
+                PrintColorText(param1, "%s%sCannot specify negative CPs.", 
+                    g_msg_start, 
+                    g_msg_textcol);
+                OpenDeleteRangeMenu(param1);
+            }
             else
             {
                 g_range_one[param1]--;
-                PrintColorText(param1, "%s%sCP1: %s%d",
-                g_msg_start,
-                g_msg_textcol,
-                g_msg_varcol,
-                g_range_one[param1]);
+                PrintColorText(param1, "%s%sCP1: %s%d", 
+                    g_msg_start, 
+                    g_msg_textcol, 
+                    g_msg_varcol, 
+                    g_range_one[param1]);
                 OpenDeleteRangeMenu(param1);
-               }
+            }
         }
         if (StrEqual(info, "remove10"))
         {
-            if(g_range_one[param1] >= 1 && g_range_one[param1] < 11)
+            if (g_range_one[param1] >= 1 && g_range_one[param1] < 11)
             {
                 PrintColorText(param1, "%s%sTrying to delete lower than 1 CP.", 
-                g_msg_start, 
-                g_msg_textcol);
+                    g_msg_start, 
+                    g_msg_textcol);
                 OpenDeleteRangeMenu(param1);
             }
-            else if (g_range_one[param1] == 0) 
+            else if (g_range_one[param1] == 0)
             {
-                PrintColorText(param1, "%s%sCannot specify negative CPs.",
-                   g_msg_start,
-                   g_msg_textcol);
-                   OpenDeleteRangeMenu(param1);
-               }
-               else
+                PrintColorText(param1, "%s%sCannot specify negative CPs.", 
+                    g_msg_start, 
+                    g_msg_textcol);
+                OpenDeleteRangeMenu(param1);
+            }
+            else
             {
                 g_range_one[param1] -= 10;
-                PrintColorText(param1, "%s%sCP1: %s%d",
-                g_msg_start,
-                g_msg_textcol,
-                g_msg_varcol,
-                g_range_one[param1]);
+                PrintColorText(param1, "%s%sCP1: %s%d", 
+                    g_msg_start, 
+                    g_msg_textcol, 
+                    g_msg_varcol, 
+                    g_range_one[param1]);
                 OpenDeleteRangeMenu(param1);
-               }
+            }
         }
         if (StrEqual(info, "confirm"))
         {
@@ -595,149 +595,149 @@ public Menu_DeleteRange1(Handle:menu, MenuAction:action, param1, param2)
 
 OpenDeleteRangeMenu2(client)
 {
-    if(g_cpcount[client] >= 2)
+    if (g_cpcount[client] >= 2)
     {
-    new Handle:menu = CreateMenu(Menu_DeleteRange2);
-    SetMenuTitle(menu, "Second CP Selection");
-    AddMenuItem(menu, "add1", "Add 1");
-    AddMenuItem(menu, "add10", "Add 10");
-    AddMenuItem(menu, "remove1", "Remove 1");
-    AddMenuItem(menu, "remove10", "Remove 10");
-    AddMenuItem(menu, "confirm", "Confirm");
-    
-    SetMenuExitBackButton(menu, true);
-    SetMenuExitButton(menu, true);
-    DisplayMenu(menu, client, MENU_TIME_FOREVER);
+        new Handle:menu = CreateMenu(Menu_DeleteRange2);
+        SetMenuTitle(menu, "Second CP Selection");
+        AddMenuItem(menu, "add1", "Add 1");
+        AddMenuItem(menu, "add10", "Add 10");
+        AddMenuItem(menu, "remove1", "Remove 1");
+        AddMenuItem(menu, "remove10", "Remove 10");
+        AddMenuItem(menu, "confirm", "Confirm");
+        
+        SetMenuExitBackButton(menu, true);
+        SetMenuExitButton(menu, true);
+        DisplayMenu(menu, client, MENU_TIME_FOREVER);
     }
     else
     {
-        PrintColorText(client, "%s%sNo available CPs or only 1 CP not allowing a range.",
-            g_msg_start,
+        PrintColorText(client, "%s%sNo available CPs or only 1 CP not allowing a range.", 
+            g_msg_start, 
             g_msg_textcol);
         OpenCheckpointMenu(client);
     }
 }
-    
-    
+
+
 public Menu_DeleteRange2(Handle:menu, MenuAction:action, param1, param2)
 {
-    if(action == MenuAction_Select)
+    if (action == MenuAction_Select)
     {
         decl String:info[32];
-        GetMenuItem(menu, param2, info, sizeof(info));    
+        GetMenuItem(menu, param2, info, sizeof(info));
         if (StrEqual(info, "add1"))
         {
-            if(g_range_two[param1] == g_cpcount[param1])
+            if (g_range_two[param1] == g_cpcount[param1])
             {
-            PrintColorText(param1, "%s%sCannot have CP2 higher than highest CP.", 
-            g_msg_start, 
-            g_msg_textcol);
-            OpenDeleteRangeMenu2(param1);
-        } 
-        else 
-        {
-            g_range_two[param1]++;
-            PrintColorText(param1, "%s%sCP2: %s%d",
-            g_msg_start,
-            g_msg_textcol,
-            g_msg_varcol,
-            g_range_two[param1]);
-            OpenDeleteRangeMenu2(param1);
-        }
+                PrintColorText(param1, "%s%sCannot have CP2 higher than highest CP.", 
+                    g_msg_start, 
+                    g_msg_textcol);
+                OpenDeleteRangeMenu2(param1);
+            }
+            else
+            {
+                g_range_two[param1]++;
+                PrintColorText(param1, "%s%sCP2: %s%d", 
+                    g_msg_start, 
+                    g_msg_textcol, 
+                    g_msg_varcol, 
+                    g_range_two[param1]);
+                OpenDeleteRangeMenu2(param1);
+            }
         }
         if (StrEqual(info, "add10"))
         {
-            if(g_range_two[param1] <= g_cpcount[param1] - 1 && g_range_two[param1] >= g_cpcount[param1] - 9 || g_range_two[param1] == g_cpcount[param1])
+            if (g_range_two[param1] <= g_cpcount[param1] - 1 && g_range_two[param1] >= g_cpcount[param1] - 9 || g_range_two[param1] == g_cpcount[param1])
             {
                 PrintColorText(param1, "%s%sCannot have CP2 higher than highest CP.", 
-                g_msg_start, 
-                g_msg_textcol);
+                    g_msg_start, 
+                    g_msg_textcol);
                 OpenDeleteRangeMenu2(param1);
             }
             else
             {
                 g_range_two[param1] += 10;
-                PrintColorText(param1, "%s%sCP2: %s%d",
-                g_msg_start,
-                g_msg_textcol,
-                g_msg_varcol,
-                g_range_two[param1]);
+                PrintColorText(param1, "%s%sCP2: %s%d", 
+                    g_msg_start, 
+                    g_msg_textcol, 
+                    g_msg_varcol, 
+                    g_range_two[param1]);
                 OpenDeleteRangeMenu2(param1);
             }
         }
         if (StrEqual(info, "remove1"))
         {
-            if(g_range_two[param1] == 1)
+            if (g_range_two[param1] == 1)
             {
                 PrintColorText(param1, "%s%sTrying to delete lower than 1 CP.", 
-                g_msg_start, 
-                g_msg_textcol);
+                    g_msg_start, 
+                    g_msg_textcol);
                 OpenDeleteRangeMenu2(param1);
             }
-            else if(g_range_two[param1] == 0)
+            else if (g_range_two[param1] == 0)
             {
-                   PrintColorText(param1, "%s%sCannot specify negative CPs.",
-                   g_msg_start,
-                   g_msg_textcol);
-                   OpenDeleteRangeMenu2(param1);
-               }
+                PrintColorText(param1, "%s%sCannot specify negative CPs.", 
+                    g_msg_start, 
+                    g_msg_textcol);
+                OpenDeleteRangeMenu2(param1);
+            }
             else
             {
                 g_range_two[param1]--;
-                PrintColorText(param1, "%s%sCP2: %s%d",
-                g_msg_start,
-                g_msg_textcol,
-                g_msg_varcol,
-                g_range_two[param1]);
+                PrintColorText(param1, "%s%sCP2: %s%d", 
+                    g_msg_start, 
+                    g_msg_textcol, 
+                    g_msg_varcol, 
+                    g_range_two[param1]);
                 OpenDeleteRangeMenu2(param1);
-               }
+            }
         }
         if (StrEqual(info, "remove10"))
         {
-            if(g_range_two[param1] >= 1 && g_range_two[param1] < 11)
+            if (g_range_two[param1] >= 1 && g_range_two[param1] < 11)
             {
                 PrintColorText(param1, "%s%sTrying to delete lower than 1 CP.", 
-                g_msg_start, 
-                g_msg_textcol);
+                    g_msg_start, 
+                    g_msg_textcol);
                 OpenDeleteRangeMenu2(param1);
             }
-            else if (g_range_two[param1] == 0) 
+            else if (g_range_two[param1] == 0)
             {
-                PrintColorText(param1, "%s%sCannot specify negative CPs.",
-                   g_msg_start,
-                   g_msg_textcol);
-                   OpenDeleteRangeMenu2(param1);
-               }
-               else
+                PrintColorText(param1, "%s%sCannot specify negative CPs.", 
+                    g_msg_start, 
+                    g_msg_textcol);
+                OpenDeleteRangeMenu2(param1);
+            }
+            else
             {
                 g_range_two[param1] -= 10;
-                PrintColorText(param1, "%s%sCP2: %s%d",
-                g_msg_start,
-                g_msg_textcol,
-                g_msg_varcol,
-                g_range_two[param1]);
+                PrintColorText(param1, "%s%sCP2: %s%d", 
+                    g_msg_start, 
+                    g_msg_textcol, 
+                    g_msg_varcol, 
+                    g_range_two[param1]);
                 OpenDeleteRangeMenu2(param1);
-               }
+            }
         }
         if (StrEqual(info, "confirm"))
         {
-            if(g_range_one[param1] >= g_range_two[param1])
+            if (g_range_one[param1] >= g_range_two[param1])
             {
-                PrintColorText(param1, "%s%sCP1 is greater than or equal to CP2.",
-                   g_msg_start,
-                   g_msg_textcol);
-                   OpenDeleteRangeMenu2(param1);
-            } 
-            else 
+                PrintColorText(param1, "%s%sCP1 is greater than or equal to CP2.", 
+                    g_msg_start, 
+                    g_msg_textcol);
+                OpenDeleteRangeMenu2(param1);
+            }
+            else
             {
-         for (new i = g_range_one[param1]; i <= g_range_two[param1]; ++i)
-         {
-        DeleteCheckpoint(param1, g_range_one[param1]);
-    }
-    OpenCheckpointMenu(param1);
-    g_range_one[param1] = 0;
-    g_range_two[param1] = 0;
-    }
+                for (new i = g_range_one[param1]; i <= g_range_two[param1]; ++i)
+                {
+                    DeleteCheckpoint(param1, g_range_one[param1]);
+                }
+                OpenCheckpointMenu(param1);
+                g_range_one[param1] = 0;
+                g_range_two[param1] = 0;
+            }
         }
     }
     else if (action == MenuAction_Cancel)
@@ -749,28 +749,28 @@ public Menu_DeleteRange2(Handle:menu, MenuAction:action, param1, param2)
     }
     else if (action == MenuAction_End)
         CloseHandle(menu);
-} 
+}
 
-    
+
 OpenDeleteAllMenu(client)
 {
-    if(g_cpcount[client] != 0) 
+    if (g_cpcount[client] != 0)
     {
-    new Handle:menu = CreateMenu(Menu_DeleteAll);
-    SetMenuTitle(menu, "Are you sure?");
-    AddMenuItem(menu, "yes", "Yes");
-    AddMenuItem(menu, "no", "No");
-    
-    SetMenuExitBackButton(menu, false);
-    SetMenuExitButton(menu, true);
-    DisplayMenu(menu, client, MENU_TIME_FOREVER);
+        new Handle:menu = CreateMenu(Menu_DeleteAll);
+        SetMenuTitle(menu, "Are you sure?");
+        AddMenuItem(menu, "yes", "Yes");
+        AddMenuItem(menu, "no", "No");
+        
+        SetMenuExitBackButton(menu, false);
+        SetMenuExitButton(menu, true);
+        DisplayMenu(menu, client, MENU_TIME_FOREVER);
     }
     else
     {
-    PrintColorText(client, "%s%sNo available CPs.", 
+        PrintColorText(client, "%s%sNo available CPs.", 
             g_msg_start, 
             g_msg_textcol);
-            OpenCheckpointMenu(client);
+        OpenCheckpointMenu(client);
     }
 }
 
@@ -780,7 +780,7 @@ public Menu_DeleteAll(Handle:menu, MenuAction:action, param1, param2)
     if (action == MenuAction_Select)
     {
         decl String:info[32];
-        GetMenuItem(menu, param2, info, sizeof(info));    
+        GetMenuItem(menu, param2, info, sizeof(info));
         if (StrEqual(info, "yes"))
         {
             g_cpcount[param1] = 0;
@@ -937,7 +937,7 @@ public Action:SM_Save(client, argS)
 
 SaveCheckpoint(client)
 {
-if (GetConVarBool(g_hAllowCp))
+    if (GetConVarBool(g_hAllowCp))
     {
         if (g_cpcount[client] < MAX_CP)
         {
