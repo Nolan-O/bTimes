@@ -84,7 +84,7 @@ public OnPluginStart()
 
 public OnClientPutInServer(client)
 {
-    g_cpcount[client] = g_cpcount[client] - g_cpcount[client];
+    g_cpcount[client] = 0;
     
     for (new i = 1; i <= MaxClients; i++)
     {
@@ -354,7 +354,7 @@ OpenCheckpointMenu(client)
 {
     new Handle:menu = CreateMenu(Menu_Checkpoint);
     
-    SetMenuTitle(menu, "Facade's CP Menu");
+    SetMenuTitle(menu, "Checkpoint Menu");
     AddMenuItem(menu, "Save", "Save");
     AddMenuItem(menu, "Teleport", "Teleport");
     AddMenuItem(menu, "Delete", "Delete");
