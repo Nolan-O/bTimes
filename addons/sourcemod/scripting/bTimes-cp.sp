@@ -18,7 +18,7 @@ public Plugin:myinfo =
 #include <bTimes-zones>
 #include <smlib/entities>
 
-#define MAX_CP 100
+#define MAX_CP 20
 
 enum
 {
