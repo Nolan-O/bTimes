@@ -38,12 +38,6 @@ new bool:g_UsePos[MAXPLAYERS + 1] =  { true, ... };
 new bool:g_UseVel[MAXPLAYERS + 1] =  { true, ... };
 new bool:g_UseAng[MAXPLAYERS + 1] =  { true, ... };
 
-new g_LastUsed[MAXPLAYERS + 1], 
-bool:g_HasLastUsed[MAXPLAYERS + 1];
-
-new g_LastSaved[MAXPLAYERS + 1], 
-bool:g_HasLastSaved[MAXPLAYERS + 1];
-
 new bool:g_BlockTpTo[MAXPLAYERS + 1][MAXPLAYERS + 1];
 
 new String:g_msg_start[128], 
@@ -977,9 +971,6 @@ SaveCheckpoint(client)
             Entity_GetAbsVelocity(client, g_cp[client][g_cpcount[client]][1]);
             GetClientEyeAngles(client, g_cp[client][g_cpcount[client]][2]);
             
-            g_HasLastSaved[client] = true;
-            g_LastSaved[client] = g_cpcount[client];
-            
             g_cpcount[client]++;
             
             PrintColorText(client, "%s%sCP %s%d%s saved.", 
@@ -1011,13 +1002,7 @@ DeleteCheckpoint(client, cpnum)
         if (cpnum == g_LastUsed[client] || g_cpcount[client] < g_LastUsed[client])
             g_HasLastUsed[client] = false;
         else if (cpnum < g_LastUsed[client])
-            g_LastUsed[client]--;
-        
-        if (cpnum == g_LastSaved[client] || g_cpcount[client] < g_LastSaved[client])
-            g_HasLastSaved[client] = false;
-        else if (cpnum < g_LastSaved[client])
-            g_LastSaved[client]--;
-        
+            g_LastUsed[client]--;     
     }
     else
     {
