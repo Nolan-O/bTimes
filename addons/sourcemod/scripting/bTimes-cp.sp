@@ -41,9 +41,6 @@ new bool:g_UseAng[MAXPLAYERS + 1] =  { true, ... };
 new g_LastUsed[MAXPLAYERS + 1], 
 bool:g_HasLastUsed[MAXPLAYERS + 1];
 
-new g_LastSaved[MAXPLAYERS + 1], 
-bool:g_HasLastSaved[MAXPLAYERS + 1];
-
 new bool:g_BlockTpTo[MAXPLAYERS + 1][MAXPLAYERS + 1];
 
 new String:g_msg_start[128], 
@@ -71,6 +68,7 @@ public OnPluginStart()
     AutoExecConfig(true, "cp", "timer");
     
     // Commands
+    RegConsoleCmdEx("sm_telelast", SM_TeleLast, "Teleports to last checkpoint.");
     RegConsoleCmdEx("sm_cp", SM_CP, "Opens the checkpoint menu.");
     RegConsoleCmdEx("sm_checkpoint", SM_CP, "Opens the checkpoint menu.");
     RegConsoleCmdEx("sm_tele", SM_Tele, "Teleports you to the specified checkpoint.");
@@ -338,6 +336,37 @@ public Menu_TpRequest(Handle:menu, MenuAction:action, param1, param2)
     }
     else if (action == MenuAction_End)
         CloseHandle(menu);
+}
+
+TeleToLastCP(client)
+{
+	if(GetConVarBool(g_hAllowCp))
+	{
+	if (!IsPlayerAlive(client))
+	{
+		PrintColorText(client, "%s%sMust be alive to use this.", 
+			g_msg_start,
+			g_msg_textcol);
+	}
+	else
+	{
+		if (g_cpcount[client] > 0)
+		{
+			TeleportToCheckpoint(client, g_cpcount[client] - 1);
+		}
+		else
+		{
+			PrintColorText(client, "%s%sNo CPs saved.", 
+				g_msg_start,
+				g_msg_textcol);
+		}
+	}
+}
+}
+
+public Action:SM_TeleLast(client, args)
+{
+	TeleToLastCP(client);
 }
 
 public Action:SM_CP(client, args)
@@ -829,7 +858,7 @@ public Menu_Teleport(Handle:menu, MenuAction:action, param1, param2)
         }
         else if (StrEqual(info, "lastsaved"))
         {
-            TeleportToLastSaved(param1);
+            TeleToLastCP(param1);
             OpenTeleportMenu(param1);
         }
         else
@@ -944,10 +973,7 @@ SaveCheckpoint(client)
             Entity_GetAbsOrigin(client, g_cp[client][g_cpcount[client]][0]);
             Entity_GetAbsVelocity(client, g_cp[client][g_cpcount[client]][1]);
             GetClientEyeAngles(client, g_cp[client][g_cpcount[client]][2]);
-            
-            g_HasLastSaved[client] = true;
-            g_LastSaved[client] = g_cpcount[client];
-            
+                     
             g_cpcount[client]++;
             
             PrintColorText(client, "%s%sCP %s%d%s saved.", 
@@ -980,12 +1006,7 @@ DeleteCheckpoint(client, cpnum)
             g_HasLastUsed[client] = false;
         else if (cpnum < g_LastUsed[client])
             g_LastUsed[client]--;
-        
-        if (cpnum == g_LastSaved[client] || g_cpcount[client] < g_LastSaved[client])
-            g_HasLastSaved[client] = false;
-        else if (cpnum < g_LastSaved[client])
-            g_LastSaved[client]--;
-        
+       
     }
     else
     {
@@ -1082,20 +1103,3 @@ TeleportToLastUsed(client)
         }
     }
 }
-
-TeleportToLastSaved(client)
-{
-    if (GetConVarBool(g_hAllowCp))
-    {
-        if (g_HasLastSaved[client] == true)
-        {
-            TeleportToCheckpoint(client, g_LastSaved[client]);
-        }
-        else
-        {
-            PrintColorText(client, "%s%sNo last saved CP.", 
-                g_msg_start, 
-                g_msg_textcol);
-        }
-    }
-} 
