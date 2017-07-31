@@ -38,6 +38,9 @@ new bool:g_UsePos[MAXPLAYERS + 1] =  { true, ... };
 new bool:g_UseVel[MAXPLAYERS + 1] =  { true, ... };
 new bool:g_UseAng[MAXPLAYERS + 1] =  { true, ... };
 
+new g_LastUsed[MAXPLAYERS + 1], 
+bool:g_HasLastUsed[MAXPLAYERS + 1];
+
 new bool:g_BlockTpTo[MAXPLAYERS + 1][MAXPLAYERS + 1];
 
 new String:g_msg_start[128], 
