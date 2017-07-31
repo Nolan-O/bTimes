@@ -973,7 +973,7 @@ SaveCheckpoint(client)
             Entity_GetAbsOrigin(client, g_cp[client][g_cpcount[client]][0]);
             Entity_GetAbsVelocity(client, g_cp[client][g_cpcount[client]][1]);
             GetClientEyeAngles(client, g_cp[client][g_cpcount[client]][2]);
-            
+                      
             g_cpcount[client]++;
             
             PrintColorText(client, "%s%sCP %s%d%s saved.", 
@@ -1005,7 +1005,8 @@ DeleteCheckpoint(client, cpnum)
         if (cpnum == g_LastUsed[client] || g_cpcount[client] < g_LastUsed[client])
             g_HasLastUsed[client] = false;
         else if (cpnum < g_LastUsed[client])
-            g_LastUsed[client]--;     
+            g_LastUsed[client]--;
+        
     }
     else
     {
