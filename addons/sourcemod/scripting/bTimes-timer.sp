@@ -44,7 +44,7 @@ new String:g_sMapName[64],
 new Float:g_fCurrentTime[MAXPLAYERS + 1],
     bool:g_bTiming[MAXPLAYERS + 1];
 
-new g_StyleConfig[32][StyleConfig];
+new g_StyleConfig[32][STYLECONFIG_SIZE];
 new g_TotalStyles;
 
 new g_Type[MAXPLAYERS + 1];
@@ -2889,7 +2889,7 @@ public Native_GetStyleConfig(Handle:plugin, numParams)
     
     if(Style < g_TotalStyles)
     {
-        SetNativeArray(2, g_StyleConfig[Style], StyleConfig);
+        SetNativeArray(2, g_StyleConfig[Style], STYLECONFIG_SIZE);
         return true;
     }
     else

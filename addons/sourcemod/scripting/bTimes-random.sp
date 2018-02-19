@@ -550,7 +550,7 @@ public Action:DropItem(client, const String:command[], argc)
         new Style = GetClientStyle(client);
         new Type  = GetClientTimerType(client);
         
-        new Config[StyleConfig];
+        new Config[STYLECONFIG_SIZE];
         Style_GetConfig(Style, Config);
         
         if(Config[GunJump] && Config[AllowType][Type])
