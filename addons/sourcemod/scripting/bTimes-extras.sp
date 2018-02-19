@@ -17,7 +17,7 @@ public OnClientDisconnect(client)
     g_bCanReceiveWeapons[client] = true;
 }
 
-public void:SetConVar(String:cvar1[], String:n_val[])
+SetConVar(String:cvar1[], String:n_val[])
 {
     new Handle:cvar = FindConVar(cvar1);
     if(cvar){
