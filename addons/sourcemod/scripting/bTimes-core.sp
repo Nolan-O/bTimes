@@ -630,7 +630,11 @@ CreatePlayerID(client)
     GetClientName(client, sName, sizeof(sName));
     
     decl String:sAuth[32];
+    #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+    GetClientAuthId(client, AuthId_Steam2, sAuth, sizeof(sAuth));
+    #else
     GetClientAuthString(client, sAuth, sizeof(sAuth));
+    #endif
     
     new idx = FindStringInArray(g_hPlayerID, sAuth);
     if(idx != -1)

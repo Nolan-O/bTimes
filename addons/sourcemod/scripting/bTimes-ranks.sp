@@ -349,7 +349,11 @@ GetChatName(client, String:buffer[], maxlength)
     if((g_ClientUseCustom[client] & CC_HASCC) && (g_ClientUseCustom[client] & CC_NAME) && GetConVarBool(g_hUseCustomChat))
     {
         decl String:sAuth[32];
+        #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+        GetClientAuthId(client, AuthId_Steam2, sAuth, sizeof(sAuth));
+        #else
         GetClientAuthString(client, sAuth, sizeof(sAuth));
+        #endif
         
         new idx = FindStringInArray(g_hCustomSteams, sAuth);
         if(idx != -1)
@@ -378,7 +382,11 @@ GetChatMessage(client, String:message[], maxlength)
     if((g_ClientUseCustom[client] & CC_HASCC) && (g_ClientUseCustom[client] & CC_MSGCOL) && GetConVarBool(g_hUseCustomChat))
     {
         decl String:sAuth[32];
+        #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+        GetClientAuthId(client, AuthId_Steam2, sAuth, sizeof(sAuth));
+        #else
         GetClientAuthString(client, sAuth, sizeof(sAuth));
+        #endif
         
         new idx = FindStringInArray(g_hCustomSteams, sAuth);
         if(idx != -1)
@@ -927,7 +935,11 @@ public Action:SM_ColoredName(client, args)
         if(g_ClientUseCustom[client] & CC_HASCC)
         {
             decl String:query[512], String:sAuth[32];
+            #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+            GetClientAuthId(client, AuthId_Steam2, sAuth, sizeof(sAuth));
+            #else
             GetClientAuthString(client, sAuth, sizeof(sAuth));
+            #endif
             
             if(args == 0)
             {
@@ -1012,7 +1024,11 @@ public Action:SM_ColoredMsg(client, args)
         if(g_ClientUseCustom[client] & CC_HASCC)
         {
             decl String:query[512], String:sAuth[32];
+            #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+            GetClientAuthId(client, AuthId_Steam2, sAuth, sizeof(sAuth));
+            #else
             GetClientAuthString(client, sAuth, sizeof(sAuth));
+            #endif
             
             if(args == 0)
             {
@@ -1210,7 +1226,11 @@ EnableCustomChat(const String:sAuth[])
     {
         if(IsClientInGame(client))
         {
+            #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+            GetClientAuthId(client, AuthId_Steam2, sAuth2, sizeof(sAuth2));
+            #else
             GetClientAuthString(client, sAuth2, sizeof(sAuth2));
+            #endif
             if(StrEqual(sAuth, sAuth2))
             {
                 g_ClientUseCustom[client]  = CC_HASCC|CC_MSGCOL|CC_NAME;
@@ -1355,7 +1375,11 @@ DisableCustomChat(const String:sAuth[])
     {
         if(IsClientInGame(client))
         {
+            #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+            GetClientAuthId(client, AuthId_Steam2, sAuth2, sizeof(sAuth2));
+            #else
             GetClientAuthString(client, sAuth2, sizeof(sAuth2));
+            #endif
             if(StrEqual(sAuth, sAuth2))
             {
                 g_ClientUseCustom[client]  = 0;

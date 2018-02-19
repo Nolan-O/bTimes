@@ -810,7 +810,11 @@ public Action:SM_Hudfuck(client, args)
         {
             if(IsClientInGame(iTarget))
             {
+                #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+                GetClientAuthId(iTarget, AuthId_Steam2, sAuth, sizeof(sAuth));
+                #else
                 GetClientAuthString(iTarget, sAuth, sizeof(sAuth));
+                #endif
                 Format(sDisplay, sizeof(sDisplay), "%N <%s>", iTarget, sAuth);
                 IntToString(GetClientUserId(iTarget), sInfo, sizeof(sInfo));
                 AddMenuItem(menu, sInfo, sDisplay);
