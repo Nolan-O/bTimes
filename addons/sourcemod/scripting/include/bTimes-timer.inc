@@ -49,7 +49,7 @@ enum styleConfig
 	bool:UnrealPhys,
 	AirAcceleration,
 	bool:EnableBunnyhopping,
-	STYLECONFIG_SIZE
+	StyleConfig
 };
 
 /*
