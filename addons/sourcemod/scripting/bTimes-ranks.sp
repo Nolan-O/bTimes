@@ -349,7 +349,11 @@ GetChatName(client, String:buffer[], maxlength)
     if((g_ClientUseCustom[client] & CC_HASCC) && (g_ClientUseCustom[client] & CC_NAME) && GetConVarBool(g_hUseCustomChat))
     {
         decl String:sAuth[32];
+        #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+        GetClientAuthId(client, AuthId_Steam2, sAuth, sizeof(sAuth));
+        #else
         GetClientAuthString(client, sAuth, sizeof(sAuth));
+        #endif
         
         new idx = FindStringInArray(g_hCustomSteams, sAuth);
         if(idx != -1)
@@ -378,7 +382,11 @@ GetChatMessage(client, String:message[], maxlength)
     if((g_ClientUseCustom[client] & CC_HASCC) && (g_ClientUseCustom[client] & CC_MSGCOL) && GetConVarBool(g_hUseCustomChat))
     {
         decl String:sAuth[32];
+        #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+        GetClientAuthId(client, AuthId_Steam2, sAuth, sizeof(sAuth));
+        #else
         GetClientAuthString(client, sAuth, sizeof(sAuth));
+        #endif
         
         new idx = FindStringInArray(g_hCustomSteams, sAuth);
         if(idx != -1)
@@ -927,7 +935,11 @@ public Action:SM_ColoredName(client, args)
         if(g_ClientUseCustom[client] & CC_HASCC)
         {
             decl String:query[512], String:sAuth[32];
+            #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+            GetClientAuthId(client, AuthId_Steam2, sAuth, sizeof(sAuth));
+            #else
             GetClientAuthString(client, sAuth, sizeof(sAuth));
+            #endif
             
             if(args == 0)
             {
@@ -1012,7 +1024,11 @@ public Action:SM_ColoredMsg(client, args)
         if(g_ClientUseCustom[client] & CC_HASCC)
         {
             decl String:query[512], String:sAuth[32];
+            #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+            GetClientAuthId(client, AuthId_Steam2, sAuth, sizeof(sAuth));
+            #else
             GetClientAuthString(client, sAuth, sizeof(sAuth));
+            #endif
             
             if(args == 0)
             {
@@ -1210,7 +1226,11 @@ EnableCustomChat(const String:sAuth[])
     {
         if(IsClientInGame(client))
         {
+            #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+            GetClientAuthId(client, AuthId_Steam2, sAuth2, sizeof(sAuth2));
+            #else
             GetClientAuthString(client, sAuth2, sizeof(sAuth2));
+            #endif
             if(StrEqual(sAuth, sAuth2))
             {
                 g_ClientUseCustom[client]  = CC_HASCC|CC_MSGCOL|CC_NAME;
@@ -1355,7 +1375,11 @@ DisableCustomChat(const String:sAuth[])
     {
         if(IsClientInGame(client))
         {
+            #if SOURCEMOD_V_MAJOR >= 1 && SOURCEMOD_V_MINOR >= 7
+            GetClientAuthId(client, AuthId_Steam2, sAuth2, sizeof(sAuth2));
+            #else
             GetClientAuthString(client, sAuth2, sizeof(sAuth2));
+            #endif
             if(StrEqual(sAuth, sAuth2))
             {
                 g_ClientUseCustom[client]  = 0;
@@ -2149,17 +2173,17 @@ public OnTimesUpdated(const String:sMapName[], Type, Style, Handle:Times)
     
     new Float:fAverage = fTimeSum / float(Size);
     
-	// Update points for all players
-	new QuerySize = 250;
-	for(new idx; idx < Size; idx++)
-	{
-		decl String:query[QuerySize];
-		new Float:fPoints = (float(Size) - float(idx)) * fAverage / 10.0;
-		FormatEx(query, QuerySize, "UPDATE times SET Points = %f ", fPoints);
-		Format(query, QuerySize, "%s WHERE MapID = (SELECT MapID FROM maps WHERE MapName='%s') AND Type=%d AND Style=%d AND PlayerID=%d", query, sMapName, Type, Style, GetArrayCell(Times, idx));
+    // Update points for all players
+    new QuerySize = 250;
+    for(new idx; idx < Size; idx++)
+    {
+        decl String:query[QuerySize];
+        new Float:fPoints = (float(Size) - float(idx)) * fAverage / 10.0;
+        FormatEx(query, QuerySize, "UPDATE times SET Points = %f ", fPoints);
+        Format(query, QuerySize, "%s WHERE MapID = (SELECT MapID FROM maps WHERE MapName='%s') AND Type=%d AND Style=%d AND PlayerID=%d", query, sMapName, Type, Style, GetArrayCell(Times, idx));
     
-		SQL_TQuery(g_DB, TimesUpdated_Callback, query);
-	}
+        SQL_TQuery(g_DB, TimesUpdated_Callback, query);
+    }
 }
 
 public TimesUpdated_Callback(Handle:owner, Handle:hndl, String:error[], any:data)

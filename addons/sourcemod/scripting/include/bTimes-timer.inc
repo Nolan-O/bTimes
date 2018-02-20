@@ -5,7 +5,7 @@
 
 #define MAX_STYLES 32
 
-enum _:StyleConfig
+enum styleConfig
 {
 	String:Name[32],
 	String:Name_Short[32],
@@ -48,7 +48,8 @@ enum _:StyleConfig
 	String:GunJump_Weapon[64],
 	bool:UnrealPhys,
 	AirAcceleration,
-	bool:EnableBunnyhopping
+	bool:EnableBunnyhopping,
+	StyleConfig
 };
 
 /*
