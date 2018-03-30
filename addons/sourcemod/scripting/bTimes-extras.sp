@@ -5,7 +5,7 @@
 public Plugin:myinfo = {
     name = "[bTimes] Extras",
     description = "Weapon commands and cvar enforcement",
-    author = "",
+    author = "Rusty",
     version = "1.0",
     url = ""
 }
