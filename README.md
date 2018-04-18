@@ -1,6 +1,5 @@
-Uses sourcemod 1.6
+Written by Blacky, other than bTimes-extras. Charles (AKA Hypnos) has a destroyed-history [fork](https://github.com/CharlesBarone/bTimes) of this about half way through this repo's commit history. I am not maintaining this because I believe if I'm going to work on bhop I should put the effort towards Momentum.
 
-Timer includes may need modification to work with sm 1.7 plugins
+The timer now uses SM 1.8+
 
-If you are having heap memory leaks, try compiling with sm 1.7.2.
-This bug may be triggered by changing MAXNAME_LENGTH in scp.inc, among other things.
+If your server is experiencing heap overflows from the timer, try reducing the size of MAXNAME_LENGTH in `include/scp.inc`, although this bug may have been from the 1.6 compiler. The cause was never fully tracked down.
