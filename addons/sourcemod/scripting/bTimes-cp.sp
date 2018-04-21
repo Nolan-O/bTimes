@@ -41,9 +41,6 @@ new bool:g_UseAng[MAXPLAYERS + 1] =  { true, ... };
 new g_LastUsed[MAXPLAYERS + 1], 
 bool:g_HasLastUsed[MAXPLAYERS + 1];
 
-new g_LastSaved[MAXPLAYERS + 1], 
-bool:g_HasLastSaved[MAXPLAYERS + 1];
-
 new bool:g_BlockTpTo[MAXPLAYERS + 1][MAXPLAYERS + 1];
 
 new String:g_msg_start[128], 
@@ -71,6 +68,7 @@ public OnPluginStart()
     AutoExecConfig(true, "cp", "timer");
     
     // Commands
+    RegConsoleCmdEx("sm_telelast", SM_TeleLast, "Teleports to last checkpoint.");
     RegConsoleCmdEx("sm_cp", SM_CP, "Opens the checkpoint menu.");
     RegConsoleCmdEx("sm_checkpoint", SM_CP, "Opens the checkpoint menu.");
     RegConsoleCmdEx("sm_tele", SM_Tele, "Teleports you to the specified checkpoint.");
@@ -168,7 +166,7 @@ public Action:SM_TpTo(client, args)
                         else
                         {
                             PrintColorText(client, "%s%sTarget not alive.", 
-                                g_msg_start, 
+                                g_msg_start,
                                 g_msg_textcol);
                         }
                     }
@@ -180,7 +178,7 @@ public Action:SM_TpTo(client, args)
                 else
                 {
                     PrintColorText(client, "%s%sYou can't target yourself.", 
-                        g_msg_start, 
+                        g_msg_start,
                         g_msg_textcol);
                 }
             }
@@ -188,7 +186,7 @@ public Action:SM_TpTo(client, args)
         else
         {
             PrintColorText(client, "%s%sYou must be alive to use the sm_tpto command.", 
-                g_msg_start, 
+                g_msg_start,
                 g_msg_textcol);
         }
     }
@@ -243,7 +241,7 @@ public Menu_Tpto(Handle:menu, MenuAction:action, client, param2)
         else
         {
             PrintColorText(client, "%s%sTarget not in game.", 
-                g_msg_start, 
+                g_msg_start,
                 g_msg_textcol);
         }
     }
@@ -276,7 +274,7 @@ SendTpToRequest(client, target)
     else
     {
         PrintColorText(client, "%s%s%N %sblocked all tpto requests from you.", 
-            g_msg_start, 
+            g_msg_start,
             g_msg_varcol, 
             target, 
             g_msg_textcol);
@@ -306,7 +304,7 @@ public Menu_TpRequest(Handle:menu, MenuAction:action, param1, param2)
                 TeleportEntity(client, vPos, NULL_VECTOR, NULL_VECTOR);
                 
                 PrintColorText(client, "%s%s%N %saccepted your request.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_varcol, 
                     param1, 
                     g_msg_textcol);
@@ -314,7 +312,7 @@ public Menu_TpRequest(Handle:menu, MenuAction:action, param1, param2)
             else if (sInfoExploded[1][0] == 'd') // deny
             {
                 PrintColorText(client, "%s%s%N %sdenied your request.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_varcol, 
                     param1, 
                     g_msg_textcol);
@@ -323,7 +321,7 @@ public Menu_TpRequest(Handle:menu, MenuAction:action, param1, param2)
             {
                 g_BlockTpTo[param1][client] = true;
                 PrintColorText(client, "%s%s%N %sdenied denied your request and blocked future requests from you.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_varcol, 
                     param1, 
                     g_msg_textcol);
@@ -332,12 +330,43 @@ public Menu_TpRequest(Handle:menu, MenuAction:action, param1, param2)
         else
         {
             PrintColorText(param1, "%s%sThe tp requester is no longer in game.", 
-                g_msg_start, 
+                g_msg_start,
                 g_msg_textcol);
         }
     }
     else if (action == MenuAction_End)
         CloseHandle(menu);
+}
+
+TeleToLastCP(client)
+{
+    if(GetConVarBool(g_hAllowCp))
+    {
+    if (!IsPlayerAlive(client))
+    {
+        PrintColorText(client, "%sMust be alive to use this.", 
+            g_msg_start,
+            g_msg_textcol);
+    }
+    else
+    {
+        if (g_cpcount[client] > 0)
+        {
+            TeleportToCheckpoint(client, g_cpcount[client] - 1);
+        }
+        else
+        {
+            PrintColorText(client, "%s%sNo CPs saved.", 
+                g_msg_start,
+                g_msg_textcol);
+        }
+    }
+}
+}
+
+public Action:SM_TeleLast(client, args)
+{
+    TeleToLastCP(client);
 }
 
 public Action:SM_CP(client, args)
@@ -471,7 +500,7 @@ OpenDeleteRangeMenu(client)
     else
     {
         PrintColorText(client, "%s%sNo available CPs or only 1 CP not allowing a range.", 
-            g_msg_start, 
+            g_msg_start,
             g_msg_textcol);
         OpenCheckpointMenu(client);
     }
@@ -488,7 +517,7 @@ public Menu_DeleteRange1(Handle:menu, MenuAction:action, param1, param2)
             if (g_range_one[param1] == g_cpcount[param1] - 1)
             {
                 PrintColorText(param1, "%s%sCannot have CP1 equal to highest CP.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu(param1);
             }
@@ -496,7 +525,7 @@ public Menu_DeleteRange1(Handle:menu, MenuAction:action, param1, param2)
             {
                 g_range_one[param1]++;
                 PrintColorText(param1, "%s%sCP1: %s%d", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol, 
                     g_msg_varcol, 
                     g_range_one[param1]);
@@ -508,7 +537,7 @@ public Menu_DeleteRange1(Handle:menu, MenuAction:action, param1, param2)
             if (g_range_one[param1] <= g_cpcount[param1] - 1 && g_range_one[param1] >= g_cpcount[param1] - 10)
             {
                 PrintColorText(param1, "%s%sCannot have CP1 equal to highest CP.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu(param1);
             }
@@ -516,7 +545,7 @@ public Menu_DeleteRange1(Handle:menu, MenuAction:action, param1, param2)
             {
                 g_range_one[param1] += 10;
                 PrintColorText(param1, "%s%sCP1: %s%d", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol, 
                     g_msg_varcol, 
                     g_range_one[param1]);
@@ -528,14 +557,14 @@ public Menu_DeleteRange1(Handle:menu, MenuAction:action, param1, param2)
             if (g_range_one[param1] == 1)
             {
                 PrintColorText(param1, "%s%sTrying to delete lower than 1 CP.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu(param1);
             }
             else if (g_range_one[param1] == 0)
             {
                 PrintColorText(param1, "%s%sCannot specify negative CPs.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu(param1);
             }
@@ -543,7 +572,7 @@ public Menu_DeleteRange1(Handle:menu, MenuAction:action, param1, param2)
             {
                 g_range_one[param1]--;
                 PrintColorText(param1, "%s%sCP1: %s%d", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol, 
                     g_msg_varcol, 
                     g_range_one[param1]);
@@ -555,14 +584,14 @@ public Menu_DeleteRange1(Handle:menu, MenuAction:action, param1, param2)
             if (g_range_one[param1] >= 1 && g_range_one[param1] < 11)
             {
                 PrintColorText(param1, "%s%sTrying to delete lower than 1 CP.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu(param1);
             }
             else if (g_range_one[param1] == 0)
             {
                 PrintColorText(param1, "%s%sCannot specify negative CPs.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu(param1);
             }
@@ -570,7 +599,7 @@ public Menu_DeleteRange1(Handle:menu, MenuAction:action, param1, param2)
             {
                 g_range_one[param1] -= 10;
                 PrintColorText(param1, "%s%sCP1: %s%d", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol, 
                     g_msg_varcol, 
                     g_range_one[param1]);
@@ -612,7 +641,7 @@ OpenDeleteRangeMenu2(client)
     else
     {
         PrintColorText(client, "%s%sNo available CPs or only 1 CP not allowing a range.", 
-            g_msg_start, 
+            g_msg_start,
             g_msg_textcol);
         OpenCheckpointMenu(client);
     }
@@ -630,7 +659,7 @@ public Menu_DeleteRange2(Handle:menu, MenuAction:action, param1, param2)
             if (g_range_two[param1] == g_cpcount[param1])
             {
                 PrintColorText(param1, "%s%sCannot have CP2 higher than highest CP.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu2(param1);
             }
@@ -638,7 +667,7 @@ public Menu_DeleteRange2(Handle:menu, MenuAction:action, param1, param2)
             {
                 g_range_two[param1]++;
                 PrintColorText(param1, "%s%sCP2: %s%d", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol, 
                     g_msg_varcol, 
                     g_range_two[param1]);
@@ -650,7 +679,7 @@ public Menu_DeleteRange2(Handle:menu, MenuAction:action, param1, param2)
             if (g_range_two[param1] <= g_cpcount[param1] - 1 && g_range_two[param1] >= g_cpcount[param1] - 9 || g_range_two[param1] == g_cpcount[param1])
             {
                 PrintColorText(param1, "%s%sCannot have CP2 higher than highest CP.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu2(param1);
             }
@@ -658,7 +687,7 @@ public Menu_DeleteRange2(Handle:menu, MenuAction:action, param1, param2)
             {
                 g_range_two[param1] += 10;
                 PrintColorText(param1, "%s%sCP2: %s%d", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol, 
                     g_msg_varcol, 
                     g_range_two[param1]);
@@ -670,14 +699,14 @@ public Menu_DeleteRange2(Handle:menu, MenuAction:action, param1, param2)
             if (g_range_two[param1] == 1)
             {
                 PrintColorText(param1, "%s%sTrying to delete lower than 1 CP.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu2(param1);
             }
             else if (g_range_two[param1] == 0)
             {
                 PrintColorText(param1, "%s%sCannot specify negative CPs.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu2(param1);
             }
@@ -685,7 +714,7 @@ public Menu_DeleteRange2(Handle:menu, MenuAction:action, param1, param2)
             {
                 g_range_two[param1]--;
                 PrintColorText(param1, "%s%sCP2: %s%d", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol, 
                     g_msg_varcol, 
                     g_range_two[param1]);
@@ -697,14 +726,14 @@ public Menu_DeleteRange2(Handle:menu, MenuAction:action, param1, param2)
             if (g_range_two[param1] >= 1 && g_range_two[param1] < 11)
             {
                 PrintColorText(param1, "%s%sTrying to delete lower than 1 CP.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu2(param1);
             }
             else if (g_range_two[param1] == 0)
             {
                 PrintColorText(param1, "%s%sCannot specify negative CPs.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu2(param1);
             }
@@ -712,7 +741,7 @@ public Menu_DeleteRange2(Handle:menu, MenuAction:action, param1, param2)
             {
                 g_range_two[param1] -= 10;
                 PrintColorText(param1, "%s%sCP2: %s%d", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol, 
                     g_msg_varcol, 
                     g_range_two[param1]);
@@ -724,7 +753,7 @@ public Menu_DeleteRange2(Handle:menu, MenuAction:action, param1, param2)
             if (g_range_one[param1] >= g_range_two[param1])
             {
                 PrintColorText(param1, "%s%sCP1 is greater than or equal to CP2.", 
-                    g_msg_start, 
+                    g_msg_start,
                     g_msg_textcol);
                 OpenDeleteRangeMenu2(param1);
             }
@@ -768,7 +797,7 @@ OpenDeleteAllMenu(client)
     else
     {
         PrintColorText(client, "%s%sNo available CPs.", 
-            g_msg_start, 
+            g_msg_start,
             g_msg_textcol);
         OpenCheckpointMenu(client);
     }
@@ -829,7 +858,7 @@ public Menu_Teleport(Handle:menu, MenuAction:action, param1, param2)
         }
         else if (StrEqual(info, "lastsaved"))
         {
-            TeleportToLastSaved(param1);
+            TeleToLastCP(param1);
             OpenTeleportMenu(param1);
         }
         else
@@ -880,7 +909,7 @@ OpenDeleteMenu(client)
     else
     {
         PrintColorText(client, "%s%sNo available CPs.", 
-            g_msg_start, 
+            g_msg_start,
             g_msg_textcol);
         OpenCheckpointMenu(client);
     }
@@ -944,14 +973,11 @@ SaveCheckpoint(client)
             Entity_GetAbsOrigin(client, g_cp[client][g_cpcount[client]][0]);
             Entity_GetAbsVelocity(client, g_cp[client][g_cpcount[client]][1]);
             GetClientEyeAngles(client, g_cp[client][g_cpcount[client]][2]);
-            
-            g_HasLastSaved[client] = true;
-            g_LastSaved[client] = g_cpcount[client];
-            
+                      
             g_cpcount[client]++;
             
             PrintColorText(client, "%s%sCP %s%d%s saved.", 
-                g_msg_start, 
+                g_msg_start,
                 g_msg_textcol, 
                 g_msg_varcol, 
                 g_cpcount[client], 
@@ -960,7 +986,7 @@ SaveCheckpoint(client)
         else
         {
             PrintColorText(client, "%s%sToo many CPs.", 
-                g_msg_start, 
+                g_msg_start,
                 g_msg_textcol);
         }
     }
@@ -981,16 +1007,11 @@ DeleteCheckpoint(client, cpnum)
         else if (cpnum < g_LastUsed[client])
             g_LastUsed[client]--;
         
-        if (cpnum == g_LastSaved[client] || g_cpcount[client] < g_LastSaved[client])
-            g_HasLastSaved[client] = false;
-        else if (cpnum < g_LastSaved[client])
-            g_LastSaved[client]--;
-        
     }
     else
     {
         PrintColorText(client, "%s%sCP %s%d%s doesn't exist", 
-            g_msg_start, 
+            g_msg_start,
             g_msg_textcol, 
             g_msg_varcol, 
             cpnum + 1, 
@@ -1057,7 +1078,7 @@ TeleportToCheckpoint(client, cpnum)
         else
         {
             PrintColorText(client, "%s%sCP %s%d%s doesn't exist", 
-                g_msg_start, 
+                g_msg_start,
                 g_msg_textcol, 
                 g_msg_varcol, 
                 cpnum + 1, 
@@ -1077,25 +1098,8 @@ TeleportToLastUsed(client)
         else
         {
             PrintColorText(client, "%s%sNo last used CP.", 
-                g_msg_start, 
+                g_msg_start,
                 g_msg_textcol);
         }
     }
 }
-
-TeleportToLastSaved(client)
-{
-    if (GetConVarBool(g_hAllowCp))
-    {
-        if (g_HasLastSaved[client] == true)
-        {
-            TeleportToCheckpoint(client, g_LastSaved[client]);
-        }
-        else
-        {
-            PrintColorText(client, "%s%sNo last saved CP.", 
-                g_msg_start, 
-                g_msg_textcol);
-        }
-    }
-} 
